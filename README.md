@@ -38,7 +38,7 @@ You can now look at published topics and move the motors and light up the mouth 
 Contents:
 =========
 
-# qbo_arduqbo
+## qbo_arduqbo
 
 This node communicates with the Q.Boards, so can move the base and the head, 
 light up the nose and the mouth, write on the LCD and read sensor values
