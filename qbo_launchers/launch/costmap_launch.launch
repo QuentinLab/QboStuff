@@ -1,0 +1,16 @@
+<launch>
+  <param name="robot_description" textfile="$(find qbo_laser_slam)/urdf/qbo.urdf"/>
+  
+  <include file="$(find qbo_arduqbo)/launch/qbo_arduqbo_default.launch" />
+
+   <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/final0902.yaml" />
+   <include file="$(find amcl)/examples/amcl_omni.launch"/>
+
+   <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+   <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+   <rosparam file="$(find qbo_laser_slam)/config/local_costmap_params.yaml" command="load" />
+   <rosparam file="$(find qbo_laser_slam)/config/global_costmap_params.yaml" command="load" />
+   <rosparam file="$(find qbo_laser_slam)/config/base_local_planner_params.yaml" command="load" />
+  
+
+</launch>

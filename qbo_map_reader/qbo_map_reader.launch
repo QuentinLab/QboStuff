@@ -1,0 +1,5 @@
+<launch>
+
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/final0902.yaml"/>
+	<node name="qbo_map_reader" pkg="qbo_map_reader" type="qbo_map_reader"/>
+</launch>
