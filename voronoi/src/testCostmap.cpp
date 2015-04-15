@@ -150,6 +150,7 @@ void testCostmap::computeBrushfire()
 {
 	mapThresholding();
 	distanceInit();
+	exit(0);
 	queueInit();
 	distanceFilling();
 	computeGrad();
@@ -323,19 +324,39 @@ void testCostmap::mapThresholding()
 			*it = 1;
 			memo = i;
 			//printf("OBSTACLE : position [%dx%d]\n",(int) i%xs_/2, (int) i/xs_/2);
-			myMat.at<unsigned char>((int)i%xs_,(int)i/xs_) = 1;
+			myMat.at<unsigned char>((int)i%xs_,(int)i/xs_) = 0;
 		}
 		else
 		{
 			//printf("FREE ZONE : position [%dx%d] !\n",(int)i%xs_/2,(int) i/xs_/2);
 			*it = 0;
-			myMat.at<unsigned char>((int)i%xs_,(int)i/xs_) = 250;
+			myMat.at<unsigned char>((int)i%xs_,(int)i/xs_) = 255;
 		}
 	}
-	/*namedWindow("thresholded cost array",WINDOW_NORMAL);	
-	imshow("thresholded cost array",myMat);
-	waitKey(2);*/
 	imwrite("/home/qbobot/Documents/thresholded_map.jpg",myMat);
+
+
+	/* Test for distanceTransform from opencv*/
+
+	Mat distance_transform(xs_,ys_,CV_32FC1);
+	Mat voronoi_diagram(xs_,ys_,CV_32SC1);
+	distanceTransform(myMat,distance_transform,voronoi_diagram,CV_DIST_L2,5,DIST_LABEL_CCOMP);
+	double max,min;
+
+	minMaxLoc(distance_transform,&min,&max,NULL,NULL);
+	printf("the max is : %hf",max);
+
+	Mat distance_transform_norm = distance_transform/max*255;
+
+	minMaxLoc(voronoi_diagram,&min,&max,NULL,NULL);
+	
+	Mat voronoi_diagram_norm = voronoi_diagram/max*255;
+	imwrite("/home/qbobot/Documents/distance_transform.jpg",distance_transform);
+	imwrite("/home/qbobot/Documents/voronoi_diagram.jpg",voronoi_diagram);
+	imwrite("/home/qbobot/Documents/distance_transform_norm.jpg",distance_transform_norm);
+	imwrite("/home/qbobot/Documents/voronoi_diagram_norm.jpg",voronoi_diagram_norm);
+
+
 }		
 
 void testCostmap::distanceInit()
@@ -592,11 +613,11 @@ void testCostmap::findNeighbours(int ind)
 		neighbours_.push_back(ind - 1);
 		neighbours_.push_back(ind-xs_);
 		neighbours_.push_back(ind+xs_);
-		/* 8 neighbours_ */ 
+		/* 8 neighbours_
 		neighbours_.push_back(ind-xs_-1);
 		neighbours_.push_back(ind-xs_+1);
 		neighbours_.push_back(ind+xs_-1);
-		neighbours_.push_back(ind+xs_+1);
+		neighbours_.push_back(ind+xs_+1) ;*/
 	}  
 }
 
