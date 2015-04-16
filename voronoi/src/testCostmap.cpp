@@ -150,7 +150,6 @@ void testCostmap::computeBrushfire()
 {
 	mapThresholding();
 	distanceInit();
-	exit(0);
 	queueInit();
 	distanceFilling();
 	computeGrad();
@@ -168,7 +167,7 @@ void testCostmap::computeBrushfire()
 			max = *it;
 		}
 	}
-	printf("MAXipipipipipipidididididdii = %d\n", max);
+	printf("MAX= %d\n", max);
 	it = distance_transform_;
 	int i;
 	for ( i = 0;i<total_size_;i++,it++)
@@ -245,6 +244,10 @@ void testCostmap::computeBrushfire()
 	{
 		skeleton.at<unsigned char>(order_ind[bibs]%xs_,order_ind[bibs]/xs_) = 140;
 	}*/
+
+
+
+	
 			
 			
 	
@@ -255,7 +258,7 @@ void testCostmap::computeBrushfire()
 	imwrite("/home/qbobot/Documents/image.jpg",distMat);
 	imwrite("/home/qbobot/Documents/skeleton.jpg",skeleton);
 	waitKey(2);
-	exit(1);
+	exit(0);
 }
 void testCostmap::orderModule()
 {
@@ -267,7 +270,7 @@ void testCostmap::orderModule()
 		order[p] = module_[p];
 	}
 	int max_inter,a,b,ind;
-	for (p = 0; p < 1000;p++)
+	for (p = 0; p < 1500;p++)
 	{
 		max_inter = 65000;
 		ind = 0;
@@ -302,10 +305,14 @@ void testCostmap::orderModule()
 			res.at<unsigned char>(i%xs_,i/xs_) = 1;
 		}
 	}
-	for (i=0; i<1000; i++)
+	for (i=0; i<2000; i++)
 	{
-		res.at<unsigned char>(order_ind[i]%xs_,order_ind[i]/xs_) = 140;
+		if (distance_transform_[order_ind[i]] >= 6)
+		{
+			res.at<unsigned char>(order_ind[i]%xs_,order_ind[i]/xs_) = 140;
+		}
 	}
+		
 	imwrite("/home/qbobot/Documents/skel.jpg",res);	
 }
 
@@ -344,18 +351,39 @@ void testCostmap::mapThresholding()
 	double max,min;
 
 	minMaxLoc(distance_transform,&min,&max,NULL,NULL);
-	printf("the max is : %hf",max);
 
 	Mat distance_transform_norm = distance_transform/max*255;
 
 	minMaxLoc(voronoi_diagram,&min,&max,NULL,NULL);
 	
 	Mat voronoi_diagram_norm = voronoi_diagram/max*255;
+
+
+	// Test for morphological thinning 
+
+	cv::Mat skel(myMat.size(), CV_8UC1, cv::Scalar(0));
+	cv::Mat temp(myMat.size(), CV_8UC1);
+	cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+	bool done;
+	do
+	{
+	  cv::morphologyEx(myMat, temp, cv::MORPH_OPEN, element);
+	  cv::bitwise_not(temp, temp);
+	  cv::bitwise_and(myMat, temp, temp);
+	  cv::bitwise_or(skel, temp, skel);
+	  cv::erode(myMat, myMat, element);
+	 
+	  double max;
+	  cv::minMaxLoc(myMat, 0, &max);
+	  done = (max == 0);
+	} while (!done);
+
+
 	imwrite("/home/qbobot/Documents/distance_transform.jpg",distance_transform);
 	imwrite("/home/qbobot/Documents/voronoi_diagram.jpg",voronoi_diagram);
 	imwrite("/home/qbobot/Documents/distance_transform_norm.jpg",distance_transform_norm);
 	imwrite("/home/qbobot/Documents/voronoi_diagram_norm.jpg",voronoi_diagram_norm);
-
+	imwrite("/home/qbobot/Documents/morphomat.jpg",skel);
 
 }		
 
