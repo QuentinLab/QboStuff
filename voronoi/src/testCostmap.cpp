@@ -247,35 +247,63 @@ void testCostmap::computeBrushfire()
 	imwrite("/home/qbobot/Documents/Images_brushfire/eroded.jpg",eroded);
 	imwrite("/home/qbobot/Documents/Images_brushfire/dilated.jpg",dilated);
 
-	findContours(img,contours,hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
+	findContours(img,contours,hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_NONE);
 	Mat allContours(xs_,ys_,CV_8U);
-	Mat dst = Mat::zeros(img.rows,img.cols,CV_8UC3);
+	Mat dst = Mat::zeros(img.rows,img.cols,CV_8U);
 
-    	int idx = 0;
+    /*	int idx = 0;
     	for( ; idx >= 0; idx = hierarchy[idx][0] )
     	{
         	Scalar color( rand()&255, rand()&255, rand()&255 );
         	drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy );
     	}
 
-	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);
-	/*max = 0;
+	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);*/
+	max = 0;
 	int indmax = 0;
 	int indp = 0;
 	int numberOfContours = contours.size();
 	int skeletonsize = skeleton_.size();
+	vector<Point> real_skel;
 	for (vector<vector<Point> >::iterator cont = contours.begin();cont != contours.end();cont++,indp++)
 	{	
-		if (*(cont).size() > max)	
+		if (cont->size() > max)	
 		{
-			max = *cont.size();
+			max = cont->size();
 			indmax = indp;
+			real_skel = *cont;
 		}
 	}
-	
+	for (vector<Point>::iterator skelit = real_skel.begin(); skelit != real_skel.end(); skelit++)
+	{
+		dst.at<unsigned char>(*skelit) = 255;
+	}
+
+	it = distance_transform_;
+	for (i = 0; i< total_size_ ; i++,it++)
+	{
+		if (*it == -1 || *it == 0)
+		{
+			dst.at<unsigned char>(i%xs_,i/xs_) = 140;
+		}
+	}
+
+	int inter = 0;
+	/*int j;
+	for (i = 10; i<xs_-10; i++)
+	{
+		for (j=10;j<ys_-10;j++)
+		{
+			if (dst.at<unsigned char>(i,j) == 255)
+			{
+				for 
+		}		
+	}*/
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);
 	printf("Number of contours : %d\n",numberOfContours);
 	printf("Biggest contour size : %d\n",max);
-	printf("Total size of skeleont : %d\n",skeletonsize);*/
+	printf("Total size of skeleton : %d\n",skeletonsize);
 	getchar();
 	exit(0);
 }
