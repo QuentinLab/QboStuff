@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <algorithm>
+#include <vector>
 #include <tf/transform_datatypes.h>
 #include <ros/ros.h>
 #include <costmap_2d/costmap_2d_ros.h>
@@ -52,6 +53,7 @@ public:
 	void queueInit();
 	void computeGrad();
 	void orderModule();
+	void computeGraph();
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
@@ -62,6 +64,8 @@ private:
 	/* cell arrays */
 	COSTTYPE *costarr_; //Cost array
 	std::vector<int> priorityqueue_; // Priority queue
+	std::vector<int> skeleton_;
+	std::vector<int> skel_ordered_;
 	int* distance_transform_; // Distance transform
 	int *costarr_thresh_;
 	int* checking_;

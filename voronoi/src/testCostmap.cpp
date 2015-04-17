@@ -33,10 +33,8 @@ void testCostmap::onInit(costmap_2d::Costmap2DROS* costmap_ros)
 
 	setCostmap(costmap_->getCharMap(),true,true);
 
-	ROS_INFO("Set 3");
 
 	computeBrushfire();
-
 }
 
 
@@ -102,7 +100,6 @@ void testCostmap::setCostmap( COSTTYPE *cmap, bool isROS, bool allow_unknown)
 				else if (v== COST_UNKNOWN_ROS && allow_unknown)
 			//	else
 				{
-					printf("No! ! i = %d k = %d\n",i,k);
 					v = COST_OBS - 1;
 					*cm = v;
 				}
@@ -154,6 +151,7 @@ void testCostmap::computeBrushfire()
 	distanceFilling();
 	computeGrad();
 	orderModule();
+	computeGraph();
 
 	ROS_INFO("Going to try to print image");
 	int max = 0;
@@ -194,32 +192,6 @@ void testCostmap::computeBrushfire()
 			rays.at<unsigned char>(i%xs_,i/xs_) = 1;
 		}
 	}
-	/*int* order = new int[total_size_];
-	int* order_ind = new int[total_size_];
-	int p,h;
-	for ( p = 0; p < total_size_; p++)
-	{
-		order[p] = distance_transform_[p];
-	}
-	int max_inter,a,b,ind;
-	for (p = 0; p < total_size_;p++)
-	{
-		printf("OK :D");
-		max_inter = order[0];
-		ind = 0;
-		for (h = 0; h <total_size_ - p; h++)
-		{
-			if (max_inter < order[h])
-			{	
-				max_inter = order[h];
-				ind = h;
-			}
-		}
-		a = order[ind];
-		order[ind] = order[total_size_ - p - 1];
-		order[total_size_ - p - 1] = a;
-		order_ind[p] = ind;
-	}*/
 
 	Mat skeleton(xs_,ys_,CV_8U);
 	it = distance_transform_;
@@ -238,26 +210,73 @@ void testCostmap::computeBrushfire()
 			skeleton.at<unsigned char>((int)i%xs_,(int)i/xs_) = 1;
 		}
 
-	}
-	/*int bibs;
-	for (bibs = 0; bibs < 50; bibs++);
-	{
-		skeleton.at<unsigned char>(order_ind[bibs]%xs_,order_ind[bibs]/xs_) = 140;
-	}*/
-
-
-
-	
-			
+	}		
 			
 	
-	/*namedWindow("image_transform",WINDOW_NORMAL);
-	resizeWindow("image_transform", 700,700);
-	imshow("image_transform", distMat);*/
-	imwrite("/home/qbobot/Documents/rays.jpg", rays);
-	imwrite("/home/qbobot/Documents/image.jpg",distMat);
-	imwrite("/home/qbobot/Documents/skeleton.jpg",skeleton);
+	imwrite("/home/qbobot/Documents/Images_brushfire/rays.jpg", rays);
+	imwrite("/home/qbobot/Documents/Images_brushfire/image.jpg",distMat);
+	imwrite("/home/qbobot/Documents/Images_brushfire/skeleton.jpg",skeleton);
 	waitKey(2);
+	
+
+	/* Test space */
+
+	/* find contour in the binary image */
+
+	Mat img(xs_,ys_,CV_8U);
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	for (i = 0; i<total_size_;i++)
+	{
+		img.at<unsigned char>(i%xs_,i/xs_) = 0;
+	}
+	for (std::vector<int>::iterator sk = skeleton_.begin();sk!=skeleton_.end();sk++)
+	{
+		img.at<unsigned char>(*sk%xs_,*sk/xs_) = 255;
+	}
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/playground.jpg",img);
+	
+	Mat element = getStructuringElement(cv::MORPH_RECT,cv::Size(3,3));
+	Mat eroded;
+	Mat dilated;
+	erode(img,eroded,element);
+	dilate(img,dilated,element);
+
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/eroded.jpg",eroded);
+	imwrite("/home/qbobot/Documents/Images_brushfire/dilated.jpg",dilated);
+
+	findContours(img,contours,hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
+	Mat allContours(xs_,ys_,CV_8U);
+	Mat dst = Mat::zeros(img.rows,img.cols,CV_8UC3);
+
+    	int idx = 0;
+    	for( ; idx >= 0; idx = hierarchy[idx][0] )
+    	{
+        	Scalar color( rand()&255, rand()&255, rand()&255 );
+        	drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy );
+    	}
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);
+	/*max = 0;
+	int indmax = 0;
+	int indp = 0;
+	int numberOfContours = contours.size();
+	int skeletonsize = skeleton_.size();
+	for (vector<vector<Point> >::iterator cont = contours.begin();cont != contours.end();cont++,indp++)
+	{	
+		if (*(cont).size() > max)	
+		{
+			max = *cont.size();
+			indmax = indp;
+		}
+	}
+	
+	printf("Number of contours : %d\n",numberOfContours);
+	printf("Biggest contour size : %d\n",max);
+	printf("Total size of skeleont : %d\n",skeletonsize);*/
+	getchar();
 	exit(0);
 }
 void testCostmap::orderModule()
@@ -291,7 +310,7 @@ void testCostmap::orderModule()
 	/* Image of the minimum of gradient */
 	ROS_INFO("COMPUTING SKELETON FILE");
 
-	int i;
+	int i,count_skel;
 	int* it = distance_transform_;
 	Mat res(xs_,ys_,CV_8U);
 	for (i=0; i< total_size_;i++,it++)
@@ -305,15 +324,20 @@ void testCostmap::orderModule()
 			res.at<unsigned char>(i%xs_,i/xs_) = 1;
 		}
 	}
+	count_skel = 0;
 	for (i=0; i<2000; i++)
 	{
 		if (distance_transform_[order_ind[i]] >= 6)
 		{
 			res.at<unsigned char>(order_ind[i]%xs_,order_ind[i]/xs_) = 140;
+			skeleton_.push_back(order_ind[i]);
+			count_skel++;
 		}
 	}
-		
-	imwrite("/home/qbobot/Documents/skel.jpg",res);	
+	
+	
+	printf("Numbers of pixels inside the skeleton : %d\n",count_skel);
+	imwrite("/home/qbobot/Documents/Images_brushfire/skel.jpg",res);	
 }
 
 void testCostmap::mapThresholding()
@@ -340,7 +364,7 @@ void testCostmap::mapThresholding()
 			myMat.at<unsigned char>((int)i%xs_,(int)i/xs_) = 255;
 		}
 	}
-	imwrite("/home/qbobot/Documents/thresholded_map.jpg",myMat);
+	imwrite("/home/qbobot/Documents/Images_brushfire/thresholded_map.jpg",myMat);
 
 
 	/* Test for distanceTransform from opencv*/
@@ -379,11 +403,12 @@ void testCostmap::mapThresholding()
 	} while (!done);
 
 
-	imwrite("/home/qbobot/Documents/distance_transform.jpg",distance_transform);
-	imwrite("/home/qbobot/Documents/voronoi_diagram.jpg",voronoi_diagram);
-	imwrite("/home/qbobot/Documents/distance_transform_norm.jpg",distance_transform_norm);
-	imwrite("/home/qbobot/Documents/voronoi_diagram_norm.jpg",voronoi_diagram_norm);
-	imwrite("/home/qbobot/Documents/morphomat.jpg",skel);
+	imwrite("/home/qbobot/Documents/Images_brushfire/distance_transform.jpg",distance_transform);
+	imwrite("/home/qbobot/Documents/Images_brushfire/voronoi_diagram.jpg",voronoi_diagram);
+	imwrite("/home/qbobot/Documents/Images_brushfire/distance_transform_norm.jpg",distance_transform_norm);
+	imwrite("/home/qbobot/Documents/Images_brushfire/voronoi_diagram_norm.jpg",voronoi_diagram_norm);
+	imwrite("/home/qbobot/Documents/Images_brushfire/morphomat.jpg",skel);
+
 
 }		
 
@@ -413,7 +438,7 @@ void testCostmap::distanceInit()
 	/*namedWindow("distance_table",WINDOW_NORMAL);	
 	imshow("distance_table",myMat);
 	waitKey(2);*/
-	imwrite("/home/qbobot/Documents/distance_init.jpg",myMat);
+	imwrite("/home/qbobot/Documents/Images_brushfire/distance_init.jpg",myMat);
 	printf("Count of obstacles : %d\n",count_obs);
 	ROS_INFO("Distance table intialized well");
 }
@@ -451,7 +476,7 @@ void testCostmap::queueInit()
 	else
 	{
 		int count_queue = priorityqueue_.size();
-		printf("Number of elements added to the queue : %d",count_queue);
+		printf("Number of elements added to the queue : %d\n",count_queue);
 		ROS_INFO("Queue initialized well !");
 	}
 	Mat initiatedqueue(xs_,ys_,CV_8U);
@@ -471,7 +496,7 @@ void testCostmap::queueInit()
 	{
 		initiatedqueue.at<unsigned char>(*it%xs_,*it/xs_) = 250;
 	}
-	imwrite("/home/qbobot/Documents/priorityqueue.jpg",initiatedqueue);
+	imwrite("/home/qbobot/Documents/Images_brushfire/priorityqueue.jpg",initiatedqueue);
 
 }	
 
@@ -584,7 +609,7 @@ void testCostmap::distanceFilling()
 				}
 
 			}
-				imwrite("/home/qbobot/Documents/priorityqueuesecondround.jpg",initiatedqueue);
+				imwrite("/home/qbobot/Documents/Images_brushfire/priorityqueuesecondround.jpg",initiatedqueue);
 		}
 		if (l == firstround -1)
 		{
@@ -614,7 +639,7 @@ void testCostmap::distanceFilling()
 				}
 
 			}
-				imwrite("/home/qbobot/Documents/priorityqueuefirstround.jpg",initiatedqueue);
+				imwrite("/home/qbobot/Documents/Images_brushfire/priorityqueuefirstround.jpg",initiatedqueue);
 		}
 			 
 		l++;
@@ -629,7 +654,7 @@ void testCostmap::distanceFilling()
 		}
 	}
 	printf("Zero count : %d\n",count_zeros);
-	printf("k = %d, 1984*1984-1984x4 = %d",k,1984*1984-1984*4);
+	printf("k = %d, 1984*1984-1984x4 = %d\n",k,1984*1984-1984*4);
 }
 
 void testCostmap::findNeighbours(int ind)
@@ -645,7 +670,7 @@ void testCostmap::findNeighbours(int ind)
 		neighbours_.push_back(ind-xs_-1);
 		neighbours_.push_back(ind-xs_+1);
 		neighbours_.push_back(ind+xs_-1);
-		neighbours_.push_back(ind+xs_+1) ;*/
+		neighbours_.push_back(ind+xs_+1);*/
 	}  
 }
 
@@ -690,8 +715,54 @@ void testCostmap::computeGrad()
 		}
 	}
 	ROS_INFO("Writing gradient to jpg file");
-	imwrite("/home/qbobot/Documents/gradient.jpg",res);
+	imwrite("/home/qbobot/Documents/Images_brushfire/gradient.jpg",res);
 			
+}
+
+void testCostmap::computeGraph()
+{
+	ROS_INFO("Computing graph");
+	std::vector<int>::iterator it;
+	std::vector<int>::iterator neighb;
+	int i;
+	int number_nodes=0;
+	for (it = skeleton_.begin(); it!= skeleton_.end();it++)
+	{
+		findNeighbours(*it);
+		int num = 0;
+		for (neighb=neighbours_.begin();neighb != neighbours_.end();neighb++)
+		{
+			if (std::find(skeleton_.begin(),skeleton_.end(),*neighb)!=skeleton_.end())
+			{
+				num ++;
+			}
+		}
+		if (num > 3)
+		{
+			skel_ordered_.push_back(*it);
+			number_nodes++;
+		}
+	}
+	printf("Number of found nodes = %d\n",number_nodes);
+	Mat myMat(xs_,ys_,CV_8UC1);
+	int* d = distance_transform_;
+	for (i = 0; i<total_size_;i++,d++)
+	{
+		if (*d == -1 || *d == 0)
+		{
+			myMat.at<unsigned char>(i%xs_,i/xs_) = 255;
+		}
+		else
+		{
+			myMat.at<unsigned char>(i%xs_,i/xs_) = 0;
+		}
+	}
+	for (it = skel_ordered_.begin(); it != skel_ordered_.end(); it++)
+	{
+		myMat.at<unsigned char>(*it%xs_,*it/xs_) = 140;
+	}
+	imwrite("/home/qbobot/Documents/Images_brushfire/skel_ordered.jpg",myMat);
+
 }
 int main(int argc,char** argv)
 {
