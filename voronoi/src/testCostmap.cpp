@@ -335,6 +335,8 @@ void testCostmap::orderModule()
 		order_ind[p] = ind;
 	}
 
+
+
 	/* Image of the minimum of gradient */
 	ROS_INFO("COMPUTING SKELETON FILE");
 
