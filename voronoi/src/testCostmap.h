@@ -68,6 +68,7 @@ public:
 	void computeGrad();
 	void orderModule();
 	void computeGraph();
+	void computeClosest();
 private:
 
 	ros::NodeHandle private_nh_; // Node handle

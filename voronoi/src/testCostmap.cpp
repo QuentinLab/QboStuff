@@ -39,8 +39,31 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	computeBrushfire();
 }
 
+void testCostmap::poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal)
+{
+	tf::Stamped<tf::Pose> global_pose;
+	cmap_->getRobotPose(global_pose);
+	vector<PoseStamped> path;
+	geometry_msgs::PoseStamped start;
+	start.header.stamp = global_pose.stamp_;
+	start.header.frame_id = global_pose.frame_id_;
+	start.pose.position.x = global_pose.getOrigin().x();
+	start.pose.position.y = global_pose.getOrigin().y();
+	start.pose.position.z = global_pose.getOrigin().z();
+	start.pose.orientation.x = global_pose.getRotation().x();
+	start.pose.orientation.y = global_pose.getRotation().y();
+	start.pose.orientation.z = global_pose.getRotation().z();
+	start.pose.orientation.w = global_pose.getRotation().w();
+	makePlan(start, *goal, path);
+
+}
+
+
 bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,  std::vector<geometry_msgs::PoseStamped>& plan )
 {
+
+	startVoro_ = findClosestVoro(start);
+	goalVoro_ = findClosestVoro(goal);
 	plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
