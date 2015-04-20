@@ -287,19 +287,20 @@ void testCostmap::computeBrushfire()
 	int indp = 0;
 	int numberOfContours = contours.size();
 	int skeletonsize = skeleton_.size();
-	vector<Point> real_skel;
+	
 	for (vector<vector<Point> >::iterator cont = contours.begin();cont != contours.end();cont++,indp++)
 	{	
 		if (cont->size() > max)	
 		{
 			max = cont->size();
 			indmax = indp;
-			real_skel = *cont;
+			skelcv_ = *cont;
 		}
 	}
 	for (vector<Point>::iterator skelit = real_skel.begin(); skelit != real_skel.end(); skelit++)
 	{
 		dst.at<unsigned char>(*skelit) = 255;
+		skelcostmap_.pushback(*skelit->x+*skelit->y*xs_);
 	}
 
 	it = distance_transform_;
@@ -780,48 +781,21 @@ void testCostmap::computeGrad()
 
 void testCostmap::computeGraph()
 {
-	ROS_INFO("Computing graph");
-	std::vector<int>::iterator it;
-	std::vector<int>::iterator neighb;
-	int i;
-	int number_nodes=0;
-	for (it = skeleton_.begin(); it!= skeleton_.end();it++)
+	vector<int>::iterator it;
+	vector<int>::iterator neighb;
+	vector<int> addTograph;
+	for (it =skelcostmap_.begin();it!= skelcostmap_.end();it++)
 	{
 		findNeighbours(*it);
-		int num = 0;
-		for (neighb=neighbours_.begin();neighb != neighbours_.end();neighb++)
+		for (neighb = neighbours_.begin();neighb!= neighbours.end();neighb++)
 		{
-			if (std::find(skeleton_.begin(),skeleton_.end(),*neighb)!=skeleton_.end())
+			if (std::find(skelcostmap_.begin(),skelcostmap_.end(),*neighb))
 			{
-				num ++;
+				addToGraph.push_back(*neighb);
 			}
 		}
-		if (num > 3)
-		{
-			skel_ordered_.push_back(*it);
-			number_nodes++;
-		}
-	}
-	printf("Number of found nodes = %d\n",number_nodes);
-	Mat myMat(xs_,ys_,CV_8UC1);
-	int* d = distance_transform_;
-	for (i = 0; i<total_size_;i++,d++)
-	{
-		if (*d == -1 || *d == 0)
-		{
-			myMat.at<unsigned char>(i%xs_,i/xs_) = 255;
-		}
-		else
-		{
-			myMat.at<unsigned char>(i%xs_,i/xs_) = 0;
-		}
-	}
-	for (it = skel_ordered_.begin(); it != skel_ordered_.end(); it++)
-	{
-		myMat.at<unsigned char>(*it%xs_,*it/xs_) = 140;
-	}
-	imwrite("/home/qbobot/Documents/Images_brushfire/skel_ordered.jpg",myMat);
-
+		graph_.push_back(addToGraph);
+	} 
 }
 
 };

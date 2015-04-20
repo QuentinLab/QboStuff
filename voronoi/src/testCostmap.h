@@ -80,6 +80,9 @@ private:
 	std::vector<int> priorityqueue_; // Priority queue
 	std::vector<int> skeleton_;
 	std::vector<int> skel_ordered_;
+	vector<Point>  skelcv_;
+	vector<int> skelcostmap_;
+	vecotr<vector<int> > graph_;
 	int* distance_transform_; // Distance transform
 	int *costarr_thresh_;
 	int* checking_;
