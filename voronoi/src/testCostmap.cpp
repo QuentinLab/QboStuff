@@ -297,10 +297,10 @@ void testCostmap::computeBrushfire()
 			skelcv_ = *cont;
 		}
 	}
-	for (vector<Point>::iterator skelit = real_skel.begin(); skelit != real_skel.end(); skelit++)
+	for (vector<Point>::iterator skelit = skelcv_.begin(); skelit != skelcv_.end(); skelit++)
 	{
 		dst.at<unsigned char>(*skelit) = 255;
-		skelcostmap_.pushback(*skelit->x+*skelit->y*xs_);
+		skelcostmap_.push_back(skelit->x+skelit->y*xs_);
 	}
 
 	it = distance_transform_;
@@ -783,13 +783,15 @@ void testCostmap::computeGraph()
 {
 	vector<int>::iterator it;
 	vector<int>::iterator neighb;
-	vector<int> addTograph;
+	vector<int> addToGraph;
+	vector<int>::iterator found;
 	for (it =skelcostmap_.begin();it!= skelcostmap_.end();it++)
 	{
 		findNeighbours(*it);
-		for (neighb = neighbours_.begin();neighb!= neighbours.end();neighb++)
+		for (neighb = neighbours_.begin();neighb!= neighbours_.end();neighb++)
 		{
-			if (std::find(skelcostmap_.begin(),skelcostmap_.end(),*neighb))
+			found = std::find(skelcostmap_.begin(),skelcostmap_.end(),*neighb);
+			if (found != skelcostmap_.end())
 			{
 				addToGraph.push_back(*neighb);
 			}

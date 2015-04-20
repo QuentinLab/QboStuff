@@ -41,15 +41,15 @@ ${catkin_LIBRARIES}
 ${OpenCV_LIBRARIES}
 )
 
-add_executable(testCostmap_node src/testCostmap_node.cpp)
+#add_executable(testCostmap_node src/testCostmap_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(voronoi_node voronoi_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(testCostmap_node
-   ${catkin_LIBRARIES}
-   ${OpenCV_LIBRARIES}
-   global_planner_lib
- )
+# target_link_libraries(testCostmap_node
+#   ${catkin_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   global_planner_lib
+# )
