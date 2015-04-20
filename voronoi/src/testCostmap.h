@@ -15,6 +15,8 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <angles/angles.h>
+#include <base_local_planner/world_model.h>
+#include <base_local_planner/costmap_model.h>
 #include <cv.h>
 #include <highgui.h>
 #include <sstream>
@@ -35,15 +37,27 @@
 #endif
 
 using namespace cv;
-class testCostmap
+
+namespace global_planner{
+
+class testCostmap : public nav_core::BaseGlobalPlanner
 {
 public:
 	testCostmap();
-	testCostmap(costmap_2d::Costmap2DROS* costmap_ros);
+	testCostmap(std::string name, costmap_2d::Costmap2DROS* costmap_ros);
 	~testCostmap();
-	void onInit(costmap_2d::Costmap2DROS* costmap_ros);
+
+
+
+	void initialize(std::string name,costmap_2d::Costmap2DROS* costmap_ros);
+	bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>&plan);
+
+
+
 	void setNavArray();
-	void setCostmap( COSTTYPE* cmap,bool isROS, bool allow_unknown); 
+	void setCostmap( COSTTYPE* cmap,bool isROS, bool allow_unknown);
+
+
 	void computeBrushfire(); // Compute distance transform
 	void mapThresholding(); // Compute the binary map
 	void distanceInit();
@@ -77,5 +91,5 @@ private:
 	int ys_; // Size of costmap in Y
 	int total_size_; // Total size X*Y
 };
-
+};
 #endif

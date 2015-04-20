@@ -1,12 +1,19 @@
 #include "testCostmap.h" 
+#include <pluginlib/class_list_macros.h>
+
+PLUGINLIB_EXPORT_CLASS(global_planner::testCostmap, nav_core::BaseGlobalPlanner)
+
+using namespace std;
+
+namespace global_planner{
 
 testCostmap::testCostmap()
 {
 }
 
-testCostmap::testCostmap(costmap_2d::Costmap2DROS* costmap_ros)
+testCostmap::testCostmap(std::string name,costmap_2d::Costmap2DROS* costmap_ros)
 {
-	onInit(costmap_ros);
+	initialize(name,costmap_ros);
 }
 
 testCostmap::~testCostmap()
@@ -14,10 +21,9 @@ testCostmap::~testCostmap()
 	ROS_INFO("The end");
 }
 
-void testCostmap::onInit(costmap_2d::Costmap2DROS* costmap_ros)
+void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_ros)
 {
-	costmap_ros_ = costmap_ros;
-	
+	costmap_ros_ = costmap_ros;	
 	ROS_INFO("Alright let's go");
 	costmap_ = costmap_ros_->getCostmap();
 	std::string frame_id = costmap_ros->getGlobalFrameID();
@@ -29,14 +35,31 @@ void testCostmap::onInit(costmap_2d::Costmap2DROS* costmap_ros)
 
 
 	setNavArray();
-	
-
 	setCostmap(costmap_->getCharMap(),true,true);
-
-
 	computeBrushfire();
 }
 
+bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,  std::vector<geometry_msgs::PoseStamped>& plan )
+{
+	plan.push_back(start);
+	for (int i=0; i<20; i++)
+	{
+		geometry_msgs::PoseStamped new_goal = goal;
+		tf::Quaternion goal_quat = tf::createQuaternionFromYaw(1.54);
+
+		new_goal.pose.position.x = -2.5+(0.05*i);
+		new_goal.pose.position.y = -3.5+(0.05*i);
+
+		new_goal.pose.orientation.x = goal_quat.x();
+		new_goal.pose.orientation.y = goal_quat.y();
+		new_goal.pose.orientation.z = goal_quat.z();
+		new_goal.pose.orientation.w = goal_quat.w();
+
+		plan.push_back(new_goal);
+	}   
+	plan.push_back(goal);
+	return true; 
+}
 
 void testCostmap::setNavArray()
 {
@@ -289,16 +312,6 @@ void testCostmap::computeBrushfire()
 	}
 
 	int inter = 0;
-	/*int j;
-	for (i = 10; i<xs_-10; i++)
-	{
-		for (j=10;j<ys_-10;j++)
-		{
-			if (dst.at<unsigned char>(i,j) == 255)
-			{
-				for 
-		}		
-	}*/
 
 	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);
 	printf("Number of contours : %d\n",numberOfContours);
@@ -334,8 +347,22 @@ void testCostmap::orderModule()
 		order[total_size_ - p - 1] = a;
 		order_ind[p] = ind;
 	}
+	
+	// Tried using the function std::sort to sort the module... did not work
 
+	/*for (p=0;p<total_size_;p++)
+	{
+		order_ind[p] = p;
+	}
 
+	printf("Gonna sort...");
+	getchar()	std::sort(order_ind,order_ind+total_size_, [&](size_t a,size_t b){return order[a] < order[b];});
+	printf("Order[total_size_ - 200] = %f\n",order[total_size_-200]);
+	for (p = total_size_-20;p<total_size_;p++)
+	{
+		printf("Order[%d] = %f\n",p,order[p]);
+	}
+	exit(0);*/
 
 	/* Image of the minimum of gradient */
 	ROS_INFO("COMPUTING SKELETON FILE");
@@ -706,6 +733,8 @@ void testCostmap::findNeighbours(int ind)
 
 void testCostmap::computeGrad()
 {
+	/* Compute gradient and module */
+
 	int i;
 	int * it = distance_transform_;
 	for (i=0;i<total_size_;i++,it++)
@@ -794,7 +823,9 @@ void testCostmap::computeGraph()
 	imwrite("/home/qbobot/Documents/Images_brushfire/skel_ordered.jpg",myMat);
 
 }
-int main(int argc,char** argv)
+
+};
+/*int main(int argc,char** argv)
 {
 	ros::init(argc,argv,"testCostmap");
 	tf::TransformListener tf2(ros::Duration(10));
@@ -802,4 +833,4 @@ int main(int argc,char** argv)
 	testCostmap mytestcostmap(&lcr2);
 	ros::spin();
 	return 0;
-}
+}*/
