@@ -37,13 +37,15 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	setNavArray();
 	setCostmap(costmap_->getCharMap(),true,true);
 	computeBrushfire();
+
+	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
 
 void testCostmap::poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal)
 {
 	tf::Stamped<tf::Pose> global_pose;
-	cmap_->getRobotPose(global_pose);
-	vector<PoseStamped> path;
+	costmap_ros_->getRobotPose(global_pose);
+	vector<geometry_msgs::PoseStamped> path;
 	geometry_msgs::PoseStamped start;
 	start.header.stamp = global_pose.stamp_;
 	start.header.frame_id = global_pose.frame_id_;
@@ -61,9 +63,28 @@ void testCostmap::poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal
 
 bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,  std::vector<geometry_msgs::PoseStamped>& plan )
 {
+	unsigned int mx,my;
+	if (!costmap_->worldToMap(start.pose.position.x,start.pose.position.y,mx,my))
+	{
+		ROS_WARN("The robot's position is off the mapp... cannot process.");
+		return  false;
+	}
+	else
+	{
+		startcm_ = mx + my*xs_;
+	}
 
-	startVoro_ = findClosestVoro(start);
-	goalVoro_ = findClosestVoro(goal);
+	if (!costmap_->worldToMap(goal.pose.position.x,goal.pose.position.y,mx,my))
+	{
+		ROS_WARN("The goal is off the map... cannot process");
+		return false;
+	}
+	else
+	{
+		goalcm_ = mx + my*xs_;
+	}
+	startVoro_ = computeClosest(startcm_);
+	goalVoro_ = computeClosest(goalcm_);
 	plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
@@ -83,6 +104,63 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	plan.push_back(goal);
 	return true; 
 }
+
+void testCostmap::dijkstraPath(int s)
+{
+	distance_ = std::vector<int>(total_size_,1000000000);	
+	set<pair<int,int> > Q;
+	distance_[s] = 0;
+	Q.insert(std::pair<int,int>(0,s));
+
+	while(!Q.empty())
+	{
+		std::pair<int,int> top = *Q.begin();
+		Q.erase(Q.begin());
+		int v = top.second;
+		int d = top.first;
+
+		for (std::vector<pair<int,int> >::const_iterator it = graph_[v].begin(); it != graph_[v].end(); it++)
+		{
+			int v2 = it->first;
+			int cost = it->second;
+			if (distance_[v2] > distance_[v] + cost)
+			{
+				if (distance_[v2] != 1000000000)
+				{
+					Q.erase(Q.find(std::pair<int,int>(distance_[v2], v2)));
+				}
+				distance_[v2] = distance_[v] + cost;
+				Q.insert(std::pair<int,int>(distance_[v2], v2));
+		    	}
+		}
+	}
+}
+
+int testCostmap::computeClosest(int goal)
+{
+	std::vector<int>::iterator skelit;
+	int goalx = goal%xs_;
+	int goaly = goal/xs_;
+	int skelx,skely;
+	int indmin=0;
+	int indcount=0;
+	double min = 999999;
+	double cur = 0;
+	for (skelit = skelcostmap_.begin(); skelit != skelcostmap_.end(); skelit++,indcount++)
+	{
+		// Computing euclidean distance to goal
+		skelx = *skelit%xs_;
+		skely = *skelit/xs_;
+		cur =  sqrt(pow(goalx-skelx,2) + pow(goaly-skely,2));
+		if (min > cur)
+		{
+			min = cur;
+			indmin = indcount;
+		}	
+	}
+	return indmin;
+		
+}	
 
 void testCostmap::setNavArray()
 {
@@ -806,8 +884,9 @@ void testCostmap::computeGraph()
 {
 	vector<int>::iterator it;
 	vector<int>::iterator neighb;
-	vector<int> addToGraph;
+	std::vector< std::pair<int,int> > addToGraph;
 	vector<int>::iterator found;
+	graph_ = std::vector< std::vector<pair<int,int> > >(total_size_);
 	for (it =skelcostmap_.begin();it!= skelcostmap_.end();it++)
 	{
 		findNeighbours(*it);
@@ -816,10 +895,10 @@ void testCostmap::computeGraph()
 			found = std::find(skelcostmap_.begin(),skelcostmap_.end(),*neighb);
 			if (found != skelcostmap_.end())
 			{
-				addToGraph.push_back(*neighb);
+				std::pair<int,int> thepair(*neighb,1);
+				graph_[*it].push_back(thepair);
 			}
 		}
-		graph_.push_back(addToGraph);
 	} 
 }
 

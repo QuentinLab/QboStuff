@@ -35,7 +35,7 @@
 #ifndef COSTTYPE
 #define COSTTYPE unsigned char
 #endif
-
+using namespace std;
 using namespace cv;
 
 namespace global_planner{
@@ -51,12 +51,14 @@ public:
 
 	void initialize(std::string name,costmap_2d::Costmap2DROS* costmap_ros);
 	bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>&plan);
+	void poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal);
 
 
 
 	void setNavArray();
 	void setCostmap( COSTTYPE* cmap,bool isROS, bool allow_unknown);
 
+	void dijkstraPath(int s);
 
 	void computeBrushfire(); // Compute distance transform
 	void mapThresholding(); // Compute the binary map
@@ -68,14 +70,19 @@ public:
 	void computeGrad();
 	void orderModule();
 	void computeGraph();
-	void computeClosest();
+	int computeClosest(int goal);
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
+	ros::Subscriber pose_sub_; // Subscriber to get goal
+
+
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class
 	
-
+	int startVoro_; // Starting point of path in Voronoi skeleton
+	int goalVoro_; // Goal point of path in Voronoi skeleton
+	std::vector<int> distance_;
 	/* cell arrays */
 	COSTTYPE *costarr_; //Cost array
 	std::vector<int> priorityqueue_; // Priority queue
@@ -83,8 +90,10 @@ private:
 	std::vector<int> skel_ordered_;
 	vector<Point>  skelcv_;
 	vector<int> skelcostmap_;
-	vector<vector<int> > graph_;
+	std::vector<std::vector<std::pair<int,int> > > graph_;
 	int* distance_transform_; // Distance transform
+	int startcm_;
+	int goalcm_;
 	int *costarr_thresh_;
 	int* checking_;
 	int* gradx_;
