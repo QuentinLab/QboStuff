@@ -85,6 +85,8 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	}
 	startVoro_ = computeClosest(startcm_);
 	goalVoro_ = computeClosest(goalcm_);
+	dijkstraPath(startVoro_);
+	computePath();
 	plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
@@ -105,9 +107,27 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	return true; 
 }
 
+void testCostmap::computePath()
+{
+	pathcm_ = std::vector<int>(distance_[goalVoro_]);
+	int cur = predecessors_[goalVoro_];
+	int next,i;
+	pathcm_[0] = startVoro_;
+	pathcm_[distance_[goalVoro_]] = goalVoro_;
+	for (i=0;i<distance_[goalVoro_]-1;i++)
+	{
+		pathcm_[distance_[goalVoro_]-i-2] = cur;
+		next = predecessors_[cur];
+		cur = next;
+			 
+	}
+	
+}
+
 void testCostmap::dijkstraPath(int s)
 {
-	distance_ = std::vector<int>(total_size_,1000000000);	
+	distance_ = std::vector<int>(total_size_,100000000);
+	predecessors_ = std::vector<int>(total_size_,0);	
 	set<pair<int,int> > Q;
 	distance_[s] = 0;
 	Q.insert(std::pair<int,int>(0,s));
@@ -131,6 +151,7 @@ void testCostmap::dijkstraPath(int s)
 				}
 				distance_[v2] = distance_[v] + cost;
 				Q.insert(std::pair<int,int>(distance_[v2], v2));
+				predecessors_[v2] = v;
 		    	}
 		}
 	}

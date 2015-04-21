@@ -71,6 +71,7 @@ public:
 	void orderModule();
 	void computeGraph();
 	int computeClosest(int goal);
+	void computePath();
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
@@ -83,6 +84,8 @@ private:
 	int startVoro_; // Starting point of path in Voronoi skeleton
 	int goalVoro_; // Goal point of path in Voronoi skeleton
 	std::vector<int> distance_;
+	std::vector<int> predecessors_;
+	std::vector<int> pathcm_;
 	/* cell arrays */
 	COSTTYPE *costarr_; //Cost array
 	std::vector<int> priorityqueue_; // Priority queue
