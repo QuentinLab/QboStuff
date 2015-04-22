@@ -37,7 +37,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	setNavArray();
 	setCostmap(costmap_->getCharMap(),true,true);
 	computeBrushfire();
-
+//	make_plan_srv_ = private_nh.advertiseService("make_plan",&testCostamp::makePlanService,this);
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
 
@@ -86,8 +86,9 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	startVoro_ = computeClosest(startcm_);
 	goalVoro_ = computeClosest(goalcm_);
 	dijkstraPath(startVoro_);
-	computePath();
-	plan.push_back(start);
+	computePathVoro();
+	computePathWorld(plan);
+	/*plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
 		geometry_msgs::PoseStamped new_goal = goal;
@@ -103,11 +104,11 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 		plan.push_back(new_goal);
 	}   
-	plan.push_back(goal);
+	plan.push_back(goal);*/
 	return true; 
 }
 
-void testCostmap::computePath()
+void testCostmap::computePathVoro()
 {
 	pathcm_ = std::vector<int>(distance_[goalVoro_]);
 	int cur = predecessors_[goalVoro_];
@@ -122,6 +123,29 @@ void testCostmap::computePath()
 			 
 	}
 	
+}
+
+void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path)
+{
+	int x,y;
+	geometry_msgs::PoseStamped pose;
+	ros::Time plan_time = ros::Time::now();
+	for (std::vector<int>::iterator it=pathcm_.begin(); it!=pathcm_.end();it++)
+	{
+		costmap_->mapToWorld(*it%xs_,*it/xs_,&x,&y);
+		pose.header.stamp = plan_time;
+		pose.header.frame_id = global_frame;
+		pose.pose.position.x = x;
+		pose.pose.position.y = y;
+		pose.pose.position.z = 0.0;
+
+		pose.pose.orientation.x = 0.0;
+		pose.pose.orientation.y = 0.0;
+		pose.pose.orientation.z = 0.0;
+		pose.pose.orientation.w = 1.0;
+		plan.push_back(pose);
+	}
+
 }
 
 void testCostmap::dijkstraPath(int s)

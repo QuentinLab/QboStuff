@@ -71,7 +71,8 @@ public:
 	void orderModule();
 	void computeGraph();
 	int computeClosest(int goal);
-	void computePath();
+	void computePathVoro();
+	void computePathWorld(std::vector<geometry_msgs::PoseStamped>& path);
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
@@ -86,6 +87,7 @@ private:
 	std::vector<int> distance_;
 	std::vector<int> predecessors_;
 	std::vector<int> pathcm_;
+	std::vector<geometry_msgs::PoseStamped> pathWorld_;
 	/* cell arrays */
 	COSTTYPE *costarr_; //Cost array
 	std::vector<int> priorityqueue_; // Priority queue
