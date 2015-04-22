@@ -37,7 +37,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	setNavArray();
 	setCostmap(costmap_->getCharMap(),true,true);
 	computeBrushfire();
-//	make_plan_srv_ = private_nh.advertiseService("make_plan",&testCostamp::makePlanService,this);
+	make_plan_srv_ = private_nh_.advertiseService("make_plan",&testCostmap::makePlanService,this);
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
 
@@ -108,6 +108,14 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	return true; 
 }
 
+bool testCostmap::makePlanService(nav_msgs::GetPlan::Request & req, nav_msgs::GetPlan::Response& resp)
+{
+	bool mybool = makePlan(req.start,req.goal,resp.plan.poses);
+	resp.plan.header.stamp = ros::Time::now();
+	resp.plan.header.frame_id = costmap_ros_ -> getGlobalFrameID();
+	return mybool;
+}
+
 void testCostmap::computePathVoro()
 {
 	pathcm_ = std::vector<int>(distance_[goalVoro_]);
@@ -147,6 +155,7 @@ void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path
 	}
 
 }
+
 
 void testCostmap::mapToWorld(double mx, double my, double& wx, double& wy) 
 {
