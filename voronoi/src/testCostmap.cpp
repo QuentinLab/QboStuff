@@ -108,12 +108,18 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	return true; 
 }
 
-bool testCostmap::makePlanService(nav_msgs::GetPlan::Request & req, nav_msgs::GetPlan::Response& resp)
+bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi::MakemyNavPlan::Response& resp)
 {
-	bool mybool = makePlan(req.start,req.goal,resp.plan.poses);
-	resp.plan.header.stamp = ros::Time::now();
-	resp.plan.header.frame_id = costmap_ros_ -> getGlobalFrameID();
-	return mybool;
+	req.start.header.frame_id = "/map";
+	req.goal.header.frame_id = "/map";
+	std::vector<geometry_msgs::PoseStamped> path;
+	bool mybool = makePlan(req.start,req.goal,path);
+	resp.plan_found = mybool;
+	if (mybool)
+	{
+		resp.path = path;
+	}
+	return true;
 }
 
 void testCostmap::computePathVoro()

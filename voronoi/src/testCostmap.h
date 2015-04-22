@@ -23,7 +23,7 @@
 #include <cvaux.h>
 #include <cxmisc.h>
 
-#include<nav_msgs/GetPlan.h>
+#include<voronoi/MakemyNavPlan.h>
 #define COST_UNKNOWN_ROS -1 // 255 = Unknown cost
 #define COST_OBS 254 // 254 = forbidden region
 #define COST_OBS_ROS 253 // ROS values of 253 are obstacles
@@ -53,7 +53,7 @@ public:
 
 	void initialize(std::string name,costmap_2d::Costmap2DROS* costmap_ros);
 	bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>&plan);
-	bool makePlanService(nav_msgs::GetPlan::Request& req, nav_msgs::GetPlan::Response& resp);
+	bool makePlanService(voronoi::MakemyNavPlan::Request& req, voronoi::MakemyNavPlan::Response& resp);
 	void poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal);
 
 

@@ -19,14 +19,29 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   visualization_msgs
+  message_generation
 )
 
 FIND_PACKAGE(OpenCV REQUIRED)
 
 
+
+add_service_files(
+	DIRECTORY srv
+	FILES
+	MakemyNavPlan.srv
+)
+
+generate_messages(
+	DEPENDENCIES
+		std_msgs
+		geometry_msgs
+		nav_msgs
+)
+
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES voronoi
+  INCLUDE_DIRS include
+  LIBRARIES global_planner_lib
 #  CATKIN_DEPENDS cmake_module costmap_2d geometry_msgs nav_core nav_msgs netpbm pcl_conversions pcl_ros pluginlib rosconsole roscpp std_msgs tf visualization_msgs
 #  DEPENDS system_lib
 )
@@ -41,6 +56,7 @@ ${catkin_LIBRARIES}
 ${OpenCV_LIBRARIES}
 )
 
+add_dependencies(global_planner_lib ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #add_executable(testCostmap_node src/testCostmap_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
