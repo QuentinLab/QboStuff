@@ -127,14 +127,14 @@ void testCostmap::computePathVoro()
 
 void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path)
 {
-	int x,y;
+	double x,y;
 	geometry_msgs::PoseStamped pose;
 	ros::Time plan_time = ros::Time::now();
 	for (std::vector<int>::iterator it=pathcm_.begin(); it!=pathcm_.end();it++)
 	{
-		costmap_->mapToWorld(*it%xs_,*it/xs_,&x,&y);
+		mapToWorld((double)(*it%xs_),(double)(*it/xs_),x,y);
 		pose.header.stamp = plan_time;
-		pose.header.frame_id = global_frame;
+		pose.header.frame_id = "map";
 		pose.pose.position.x = x;
 		pose.pose.position.y = y;
 		pose.pose.position.z = 0.0;
@@ -143,9 +143,15 @@ void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path
 		pose.pose.orientation.y = 0.0;
 		pose.pose.orientation.z = 0.0;
 		pose.pose.orientation.w = 1.0;
-		plan.push_back(pose);
+		path.push_back(pose);
 	}
 
+}
+
+void testCostmap::mapToWorld(double mx, double my, double& wx, double& wy) 
+{
+	wx = costmap_->getOriginX() + mx * costmap_->getResolution();
+	wy = costmap_->getOriginY() + my * costmap_->getResolution();
 }
 
 void testCostmap::dijkstraPath(int s)

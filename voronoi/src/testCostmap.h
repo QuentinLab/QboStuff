@@ -55,29 +55,30 @@ public:
 
 
 
-	void setNavArray();
-	void setCostmap( COSTTYPE* cmap,bool isROS, bool allow_unknown);
+	void setNavArray(); // Memory allocation for tables that can be directly allocated
+	void setCostmap( COSTTYPE* cmap,bool isROS, bool allow_unknown); // Prepare costmap
 
-	void dijkstraPath(int s);
+	void dijkstraPath(int s); // Dijkstra computation on skeleton
 
 	void computeBrushfire(); // Compute distance transform
 	void mapThresholding(); // Compute the binary map
-	void distanceInit();
-	void distanceFilling();
-	void findNeighbours(int ind);
- 	std::vector<int> neighbours_;	
-	void queueInit();
-	void computeGrad();
-	void orderModule();
-	void computeGraph();
-	int computeClosest(int goal);
-	void computePathVoro();
-	void computePathWorld(std::vector<geometry_msgs::PoseStamped>& path);
+	void distanceInit(); //Initialize distance transfrom (obstacles : -1 others : 0)
+	void distanceFilling(); // Create the distance transform
+	void findNeighbours(int ind);  // Find the neighbours of a pixel in the costmap (4 connected)
+ 	std::vector<int> neighbours_; // Neighbours found	
+	void queueInit(); // Initialize queue for distance transform
+	void computeGrad(); // Compute gradient and module of gradient over the map
+	void orderModule(); // Find the module minimum to obtain skeleton
+	void computeGraph(); // Compute graph (order the pixels of the skeleton)
+	int computeClosest(int goal); //Compute closest point of the Voronoi diagram to "goal"
+	void computePathVoro(); // Compute path on Voronoi diagram
+	void computePathWorld(std::vector<geometry_msgs::PoseStamped>& path); // Compute path on Voronoi diagram in map coordinates
+	void mapToWorld(double mx, double my, double & wx, double& wy);
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
 	ros::Subscriber pose_sub_; // Subscriber to get goal
-
+	ros::ServiceServer make_plan_srv_; // Service advertiser
 
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class
