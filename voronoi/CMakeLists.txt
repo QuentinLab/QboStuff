@@ -57,6 +57,14 @@ ${OpenCV_LIBRARIES}
 )
 
 add_dependencies(global_planner_lib ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+
+add_executable(askforpath src/askforpath.cpp)
+
+target_link_libraries(askforpath
+${catkin_LIBRARIES}
+global_planner_lib
+)
+
 #add_executable(testCostmap_node src/testCostmap_node.cpp)
 
 ## Add cmake target dependencies of the executable/library

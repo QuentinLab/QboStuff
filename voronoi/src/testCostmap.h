@@ -12,7 +12,7 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <costmap_2d/costmap_2d.h>
 #include <nav_core/base_global_planner.h>
-
+#include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <angles/angles.h>
 #include <base_local_planner/world_model.h>
@@ -24,6 +24,7 @@
 #include <cxmisc.h>
 
 #include<voronoi/MakemyNavPlan.h>
+
 #define COST_UNKNOWN_ROS -1 // 255 = Unknown cost
 #define COST_OBS 254 // 254 = forbidden region
 #define COST_OBS_ROS 253 // ROS values of 253 are obstacles
@@ -77,12 +78,13 @@ public:
 	void computePathVoro(); // Compute path on Voronoi diagram
 	void computePathWorld(std::vector<geometry_msgs::PoseStamped>& path); // Compute path on Voronoi diagram in map coordinates
 	void mapToWorld(double mx, double my, double & wx, double& wy);
+	void test(double k,double z);
 private:
 
 	ros::NodeHandle private_nh_; // Node handle
 	ros::Subscriber pose_sub_; // Subscriber to get goal
 	ros::ServiceServer make_plan_srv_; // Service advertiser
-
+	ros::Publisher plan_pub_;
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class
 	

@@ -10,12 +10,10 @@ namespace global_planner{
 testCostmap::testCostmap()
 {
 }
-
 testCostmap::testCostmap(std::string name,costmap_2d::Costmap2DROS* costmap_ros)
 {
 	initialize(name,costmap_ros);
 }
-
 testCostmap::~testCostmap()
 {
 	ROS_INFO("The end");
@@ -37,6 +35,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	setNavArray();
 	setCostmap(costmap_->getCharMap(),true,true);
 	computeBrushfire();
+	plan_pub_ = private_nh_.advertise<nav_msgs::Path>("plan",1);
 	make_plan_srv_ = private_nh_.advertiseService("make_plan",&testCostmap::makePlanService,this);
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
@@ -64,6 +63,7 @@ void testCostmap::poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal
 bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal,  std::vector<geometry_msgs::PoseStamped>& plan )
 {
 	unsigned int mx,my;
+	nav_msgs::Path path_msg;
 	if (!costmap_->worldToMap(start.pose.position.x,start.pose.position.y,mx,my))
 	{
 		ROS_WARN("The robot's position is off the mapp... cannot process.");
@@ -88,6 +88,10 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	dijkstraPath(startVoro_);
 	computePathVoro();
 	computePathWorld(plan);
+	path_msg.poses = plan;
+	path_msg.header.stamp = ros::Time::now();
+	path_msg.header.frame_id = "map";
+	plan_pub_.publish(path_msg);
 	/*plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
@@ -110,6 +114,7 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi::MakemyNavPlan::Response& resp)
 {
+	ROS_INFO("Service required");
 	req.start.header.frame_id = "/map";
 	req.goal.header.frame_id = "/map";
 	std::vector<geometry_msgs::PoseStamped> path;
@@ -485,8 +490,6 @@ void testCostmap::computeBrushfire()
 	printf("Number of contours : %d\n",numberOfContours);
 	printf("Biggest contour size : %d\n",max);
 	printf("Total size of skeleton : %d\n",skeletonsize);
-	getchar();
-	exit(0);
 }
 void testCostmap::orderModule()
 {
@@ -524,7 +527,7 @@ void testCostmap::orderModule()
 	}
 
 	printf("Gonna sort...");
-	getchar()	std::sort(order_ind,order_ind+total_size_, [&](size_t a,size_t b){return order[a] < order[b];});
+	std::sort(order_ind,order_ind+total_size_, [&](size_t a,size_t b){return order[a] < order[b];});
 	printf("Order[total_size_ - 200] = %f\n",order[total_size_-200]);
 	for (p = total_size_-20;p<total_size_;p++)
 	{
@@ -660,9 +663,8 @@ void testCostmap::distanceInit()
 		}
 		
 	}
-	/*namedWindow("distance_table",WINDOW_NORMAL);	
-	imshow("distance_table",myMat);
-	waitKey(2);*/
+	
+	
 	imwrite("/home/qbobot/Documents/Images_brushfire/distance_init.jpg",myMat);
 	printf("Count of obstacles : %d\n",count_obs);
 	ROS_INFO("Distance table intialized well");

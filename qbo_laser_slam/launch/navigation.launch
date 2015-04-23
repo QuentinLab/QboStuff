@@ -57,7 +57,7 @@
        <rosparam file="$(find qbo_laser_slam)/config/global_costmap_params.yaml" command="load" />
        <rosparam file="$(find qbo_laser_slam)/config/base_local_planner_params.yaml" command="load" />
        <param name="controller_frequency" value="10"/>
-       <param name="base_global_planner" value="global_planner/testCostmap"/>
+       <param name="base_global_planner" value="global_planner/testCostmap"/> 
     </node>
 
 </launch>
