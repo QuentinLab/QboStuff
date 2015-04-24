@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="voronoi" type="testCostmap_node" respawn="false" name="tesCostmap_node" output="screen"> 
+	<node pkg="voronoi" type="testPath" respawn="false" name="testPath" output="screen"> 
        <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
        <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
        <rosparam file="$(find qbo_laser_slam)/config/local_costmap_params.yaml" command="load" />

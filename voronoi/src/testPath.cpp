@@ -1,10 +1,7 @@
 #include "testCostmap.h" 
-#include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(global_planner::testCostmap, nav_core::BaseGlobalPlanner)
 
 using namespace std;
-
 namespace global_planner{
 
 testCostmap::testCostmap()
@@ -98,14 +95,14 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 	ROS_INFO("Computing path in Costmap");
 	computePathVoro();
-
-	ROS_INFO("Computing path in World");
-	computePathWorld(plan);
-
-	path_msg.poses = plan;
-	path_msg.header.stamp = ros::Time::now();
-	path_msg.header.frame_id = "map";
-	plan_pub_.publish(path_msg);
+//
+//	ROS_INFO("Computing path in World");
+//	computePathWorld(plan);
+//
+//	path_msg.poses = plan;
+//	path_msg.header.stamp = ros::Time::now();
+//	path_msg.header.frame_id = "map";
+//	plan_pub_.publish(path_msg);
 	/*plan.push_back(start);
 	for (int i=0; i<20; i++)
 	{
@@ -156,7 +153,42 @@ void testCostmap::computePathVoro()
 		cur = next;
 			 
 	}
-	
+	if (pathcm_.empty())
+	{
+		ROS_INFO("PATH IS EMPTY. EXITING PROGRAM");
+		exit(0);
+	}
+
+	// Printing the image of the path
+
+	Mat draw(xs_,ys_,CV_8UC1);
+	for (i=0;i<total_size_;i++)
+	{
+		if (distance_transform_[i] == -1 || distance_transform_[i] == 0)
+		{
+			draw.at<unsigned char>(i%xs_,i/xs_) = 0;
+		}
+		else
+		{
+			draw.at<unsigned char>(i%xs_,i/xs_) = 70;
+		}
+	}
+	vector<int>::iterator it;
+	for (it = skelcostmap_.begin();it != skelcostmap_.end();it++)
+	{
+		draw.at<unsigned char>(*it%xs_,*it/xs_) = 140;
+	}
+	for (it = pathcm_.begin();it != pathcm_.end();it++)
+	{
+		draw.at<unsigned char>(i%xs_,i/xs_) =255;
+	}
+
+	draw.at<unsigned char>(startcm_%xs_,startcm_/xs_) = 255;
+	draw.at<unsigned char>(goalcm_%xs_,goalcm_/xs_) = 255;
+	draw.at<unsigned char>(startVoro_%xs_,startVoro_/xs_) = 255;
+	draw.at<unsigned char>(goalVoro_%xs_,goalVoro_/xs_) =255;
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/path.jpg",draw);
 }
 
 void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path)
@@ -179,6 +211,7 @@ void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path
 		pose.pose.orientation.w = 1.0;
 		path.push_back(pose);
 	}
+	ROS_INFO("Done computing path in world");
 
 }
 
@@ -237,7 +270,7 @@ int testCostmap::computeClosest(int goal)
 		// Computing euclidean distance to goal
 		skelx = *skelit%xs_;
 		skely = *skelit/xs_;
-		cur =  sqrt(pow(goalx-skelx,2) + pow(goaly-skely,2));
+		cur =  sqrt(pow(goalx-skelx,2) +  pow(goaly-skely,2));
 		if (min > cur)
 		{
 			min = cur;
@@ -484,12 +517,7 @@ void testCostmap::computeBrushfire()
 			skelcv_ = *cont;
 		}
 	}
-	for (vector<Point>::iterator skelit = skelcv_.begin(); skelit != skelcv_.end(); skelit++)
-	{
-		dst.at<unsigned char>(*skelit) = 255;
-		skelcostmap_.push_back(skelit->y+skelit->x*xs_);
-	}
-
+	
 	it = distance_transform_;
 	for (i = 0; i< total_size_ ; i++,it++)
 	{
@@ -499,7 +527,33 @@ void testCostmap::computeBrushfire()
 		}
 	}
 
-	int inter = 0;
+	for (vector<Point>::iterator skelit = skelcv_.begin(); skelit != skelcv_.end(); skelit++)
+	{
+		dst.at<unsigned char>(*skelit) = 255;
+		skelcostmap_.push_back(skelit->y+skelit->x*xs_);
+	}
+
+	// Check if the skeleton is right in the costmap
+
+	Mat skeletonCostmapImg(xs_,ys_,CV_8UC1);
+	for (i = 0;i< total_size_;i++)
+	{
+		if (distance_transform_[i] == -1 || distance_transform_[i] == 0)
+		{
+			skeletonCostmapImg.at<unsigned char>(i%xs_,i/xs_) = 0;
+		}
+		else
+		{
+			skeletonCostmapImg.at<unsigned char>(i%xs_,i/xs_) = 140;
+		}
+	}
+	for (vector<int>::iterator skelcm = skelcostmap_.begin();skelcm != skelcostmap_.end();skelcm++)
+	{
+		skeletonCostmapImg.at<unsigned char>(*skelcm%xs_,*skelcm/xs_) = 255;
+	}
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/skeletonCostmapImg.jpg",skeletonCostmapImg);
+
 
 	imwrite("/home/qbobot/Documents/Images_brushfire/contourscolor.jpg",dst);
 	printf("Number of contours : %d\n",numberOfContours);
@@ -908,7 +962,7 @@ void testCostmap::findNeighbours(int ind,int N)
 		neighbours_.push_back(ind - 1);
 		neighbours_.push_back(ind-xs_);
 		neighbours_.push_back(ind+xs_);
-		if (N==8)
+		if (N == 8)
 		{
 			neighbours_.push_back(ind-xs_-1);
 			neighbours_.push_back(ind-xs_+1);
@@ -988,12 +1042,13 @@ void testCostmap::computeGraph()
 }
 
 };
-/*int main(int argc,char** argv)
+
+int main(int argc,char** argv)
 {
 	ros::init(argc,argv,"testCostmap");
 	tf::TransformListener tf2(ros::Duration(10));
 	costmap_2d::Costmap2DROS lcr2("global_costmap",tf2);
-	testCostmap mytestcostmap(&lcr2);
+	global_planner::testCostmap mytestcostmap("bibu",&lcr2);
 	ros::spin();
 	return 0;
-}*/
+}

@@ -68,7 +68,7 @@ public:
 	void mapThresholding(); // Compute the binary map
 	void distanceInit(); //Initialize distance transfrom (obstacles : -1 others : 0)
 	void distanceFilling(); // Create the distance transform
-	void findNeighbours(int ind);  // Find the neighbours of a pixel in the costmap (4 connected)
+	void findNeighbours(int ind,int N);  // Find the neighbours of a pixel in the costmap (4 connected)
  	std::vector<int> neighbours_; // Neighbours found	
 	void queueInit(); // Initialize queue for distance transform
 	void computeGrad(); // Compute gradient and module of gradient over the map
