@@ -98,6 +98,7 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 	ROS_INFO("Computing path in Costmap");
 	computePathVoro();
+	
 
 	ROS_INFO("Computing path in World");
 	computePathWorld(plan);
@@ -191,7 +192,7 @@ void testCostmap::mapToWorld(double mx, double my, double& wx, double& wy)
 
 void testCostmap::dijkstraPath(int s)
 {
-	distance_ = std::vector<int>(total_size_,100000000);
+	distance_ = std::vector<int>(total_size_,1000000);
 	predecessors_ = std::vector<int>(total_size_,0);	
 	set<pair<int,int> > Q;
 	distance_[s] = 0;
@@ -210,7 +211,7 @@ void testCostmap::dijkstraPath(int s)
 			int cost = it->second;
 			if (distance_[v2] > distance_[v] + cost)
 			{
-				if (distance_[v2] != 1000000000)
+				if (distance_[v2] != 1000000)
 				{
 					Q.erase(Q.find(std::pair<int,int>(distance_[v2], v2)));
 				}

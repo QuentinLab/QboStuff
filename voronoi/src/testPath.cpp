@@ -86,6 +86,33 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	startVoro_ = computeClosest(startcm_);
 	goalVoro_ = computeClosest(goalcm_);
 
+	int i;
+	Mat draw(xs_,ys_,CV_8UC1);
+	for (i=0;i<total_size_;i++)
+	{
+		if (distance_transform_[i] == -1 || distance_transform_[i] == 0)
+		{
+			draw.at<unsigned char>(i%xs_,i/xs_) = 0;
+		}
+		else
+		{
+			draw.at<unsigned char>(i%xs_,i/xs_) = 70;
+		}
+	}
+	vector<int>::iterator it;
+	for (it = skelcostmap_.begin();it != skelcostmap_.end();it++)
+	{
+		draw.at<unsigned char>(*it%xs_,*it/xs_) = 140;
+	}
+
+	draw.at<unsigned char>(startcm_%xs_,startcm_/xs_) = 255;
+	draw.at<unsigned char>(goalcm_%xs_,goalcm_/xs_) = 255;
+	draw.at<unsigned char>(startVoro_%xs_,startVoro_/xs_) = 255;
+	draw.at<unsigned char>(goalVoro_%xs_,goalVoro_/xs_) =255;
+
+	imwrite("/home/qbobot/Documents/Images_brushfire/path.jpg",draw);
+	//printf("goalVoro_ = %d\n",startVoro_);
+	//printf("graph_[goalVoro_].size() = %d\n",graph_[startVoro_].size());
 
 	ROS_INFO("Compute Dijkstra");
 
@@ -95,9 +122,9 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 	ROS_INFO("Computing path in Costmap");
 	computePathVoro();
-//
-//	ROS_INFO("Computing path in World");
-//	computePathWorld(plan);
+
+	ROS_INFO("Computing path in World");
+	computePathWorld(plan);
 //
 //	path_msg.poses = plan;
 //	path_msg.header.stamp = ros::Time::now();
@@ -141,6 +168,7 @@ bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi
 
 void testCostmap::computePathVoro()
 {
+	printf("Distance goal : %d\n",distance_[goalVoro_]);
 	pathcm_ = std::vector<int>(distance_[goalVoro_]);
 	int cur = predecessors_[goalVoro_];
 	int next,i;
@@ -180,7 +208,7 @@ void testCostmap::computePathVoro()
 	}
 	for (it = pathcm_.begin();it != pathcm_.end();it++)
 	{
-		draw.at<unsigned char>(i%xs_,i/xs_) =255;
+		draw.at<unsigned char>(*it%xs_,*it/xs_) =255;
 	}
 
 	draw.at<unsigned char>(startcm_%xs_,startcm_/xs_) = 255;
@@ -188,7 +216,8 @@ void testCostmap::computePathVoro()
 	draw.at<unsigned char>(startVoro_%xs_,startVoro_/xs_) = 255;
 	draw.at<unsigned char>(goalVoro_%xs_,goalVoro_/xs_) =255;
 
-	imwrite("/home/qbobot/Documents/Images_brushfire/path.jpg",draw);
+	imwrite("/home/qbobot/Documents/Images_brushfire/pathVoro.jpg",draw);
+	ROS_INFO("Done computing path Voro");
 }
 
 void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path)
@@ -224,26 +253,25 @@ void testCostmap::mapToWorld(double mx, double my, double& wx, double& wy)
 
 void testCostmap::dijkstraPath(int s)
 {
-	distance_ = std::vector<int>(total_size_,100000000);
+	distance_ = std::vector<int>(total_size_,1000000);
 	predecessors_ = std::vector<int>(total_size_,0);	
 	set<pair<int,int> > Q;
 	distance_[s] = 0;
 	Q.insert(std::pair<int,int>(0,s));
-
+	int count= 0;
 	while(!Q.empty())
 	{
 		std::pair<int,int> top = *Q.begin();
 		Q.erase(Q.begin());
 		int v = top.second;
 		int d = top.first;
-
 		for (std::vector<pair<int,int> >::const_iterator it = graph_[v].begin(); it != graph_[v].end(); it++)
 		{
 			int v2 = it->first;
 			int cost = it->second;
 			if (distance_[v2] > distance_[v] + cost)
 			{
-				if (distance_[v2] != 1000000000)
+				if (distance_[v2] != 1000000)
 				{
 					Q.erase(Q.find(std::pair<int,int>(distance_[v2], v2)));
 				}
@@ -394,7 +422,6 @@ void testCostmap::computeBrushfire()
 	distanceFilling();
 	computeGrad();
 	orderModule();
-	computeGraph();
 
 	ROS_INFO("Going to try to print image");
 	int max = 0;
@@ -552,6 +579,7 @@ void testCostmap::computeBrushfire()
 		skeletonCostmapImg.at<unsigned char>(*skelcm%xs_,*skelcm/xs_) = 255;
 	}
 
+	computeGraph();
 	imwrite("/home/qbobot/Documents/Images_brushfire/skeletonCostmapImg.jpg",skeletonCostmapImg);
 
 
@@ -1021,11 +1049,13 @@ void testCostmap::computeGrad()
 
 void testCostmap::computeGraph()
 {
+	ROS_INFO("Computing Graph !");
 	vector<int>::iterator it;
 	vector<int>::iterator neighb;
 	std::vector< std::pair<int,int> > addToGraph;
 	vector<int>::iterator found;
 	graph_ = std::vector< std::vector<pair<int,int> > >(total_size_);
+	//printf("skelcostmap_.size() = %d\n",skelcostmap_.size());
 	for (it =skelcostmap_.begin();it!= skelcostmap_.end();it++)
 	{
 		findNeighbours(*it,8);
