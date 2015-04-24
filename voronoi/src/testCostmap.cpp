@@ -40,6 +40,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
 
+
 void testCostmap::poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal)
 {
 	tf::Stamped<tf::Pose> global_pose;
@@ -99,6 +100,16 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	ROS_INFO("Computing path in Costmap");
 	computePathVoro();
 	
+	ROS_INFO("Computing how to get on Skeleton");
+	
+	startpath_ = findPathFree(startcm_,startVoro_);
+	goalpath_ = findPathFree(goalVoro_,goalcm_);
+
+	ROS_INFO("Recreating total path");
+
+	pathcm_.insert(pathcm_.begin(),startpath_.begin(),startpath_.end());
+	pathcm_.insert(pathcm_.end(),goalpath_.begin(),goalpath_.end());
+
 
 	ROS_INFO("Computing path in World");
 	computePathWorld(plan);
@@ -143,6 +154,45 @@ bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi
 	return true;
 }
 
+std::vector<int> testCostmap::findPathFree(int a,int b)
+{
+	std::vector<int> path_free;
+	int ax = a%xs_;
+	int ay = a/xs_;
+	int bx = b%xs_;
+	int by = b/xs_;
+	int i = 0;
+	if (bx - ax >= 0)
+	{
+		for (i = 1; i <= bx -ax; i++)
+		{
+			path_free.push_back(ax + i + ay*xs_);
+		}
+	}
+	else
+	{
+		for (i = 1; i <= bx - ax; i++)
+		{
+			path_free.push_back(ax-i+ay*xs_);
+		}
+	}
+	if (by - ay >= 0)
+	{
+		for (i = 1; i <= by - ay; i++)
+		{
+			path_free.push_back(bx+(ay+i)*xs_);
+		}
+	}
+	else
+	{
+		for (i=1;i<=by-ay;i++)
+		{
+			path_free.push_back(bx+(ay-i)*xs_);
+		}
+	}
+	return path_free;
+		
+}
 void testCostmap::computePathVoro()
 {
 	pathcm_ = std::vector<int>(distance_[goalVoro_]);

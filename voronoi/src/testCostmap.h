@@ -75,7 +75,9 @@ public:
 	void orderModule(); // Find the module minimum to obtain skeleton
 	void computeGraph(); // Compute graph (order the pixels of the skeleton)
 	int computeClosest(int goal); //Compute closest point of the Voronoi diagram to "goal"
+	std::vector<int> findPathFree(int a,int b); //Compute straight line path between a (start) and b (goal)
 	void computePathVoro(); // Compute path on Voronoi diagram
+	void computeTotalPath(); // Compute total path in costmap coordinates
 	void computePathWorld(std::vector<geometry_msgs::PoseStamped>& path); // Compute path on Voronoi diagram in map coordinates
 	void mapToWorld(double mx, double my, double & wx, double& wy);
 	void test(double k,double z);
@@ -93,6 +95,9 @@ private:
 	std::vector<int> distance_;
 	std::vector<int> predecessors_;
 	std::vector<int> pathcm_;
+	std::vector<int> startpath_;
+	std::vector<int> goalpath_;
+	std::vector<int> total_path_;
 	std::vector<geometry_msgs::PoseStamped> pathWorld_;
 	/* cell arrays */
 	COSTTYPE *costarr_; //Cost array
