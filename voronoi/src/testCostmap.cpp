@@ -121,38 +121,28 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	ROS_INFO("Recreating total path");
 
 	pathcm_.insert(pathcm_.begin(),startpath_.begin(),startpath_.end());
-	pathcm_.insert(pathcm_.end(),goalpath_.begin(),goalpath_.end());
-
+	pathcm_.insert(pathcm_.end()-1,goalpath_.begin(),goalpath_.end());
 
 	Mat draw(xs_,ys_,CV_8U);
-	int i;
-	for (i=0;i<total_size_;i++)
+	for (int i = 0; i< total_size_;i++)
 	{
-		if (distance_transform_[i] == -1 || distance_transform_[i] == 0)
+		if (distance_transform_[i] == 0 || distance_transform_[i] == -1)
 		{
-			draw.at<unsigned char>(i%xs_,i/xs_) = 0;
+			draw.at<unsigned char>(i%xs_,i/xs_) = 255;
 		}
 		else
 		{
-			draw.at<unsigned char>(i%xs_,i/xs_) = 70;
+			draw.at<unsigned char>(i%xs_,i/xs_) = 0;
 		}
 	}
-	vector<int>::iterator it;
-	for (it = skelcostmap_.begin();it != skelcostmap_.end();it++)
+
+	for (std::vector<int>::iterator it = pathcm_.begin(); it!= pathcm_.end();it++)
 	{
 		draw.at<unsigned char>(*it%xs_,*it/xs_) = 140;
 	}
-	for (it = pathcm_.begin(); it != pathcm_.end();it++)
-	{
-		draw.at<unsigned char>(*it%xs_,*it/xs_) = 255;
-	}
+	imwrite("/home/qbobot/Documents/Images_plugin/FINALPATH.jpg",draw);
 
-	draw.at<unsigned char>(startcm_%xs_,startcm_/xs_) = 255;
-	draw.at<unsigned char>(goalcm_%xs_,goalcm_/xs_) = 255;
-	draw.at<unsigned char>(startVoro_%xs_,startVoro_/xs_) = 255;
-	draw.at<unsigned char>(goalVoro_%xs_,goalVoro_/xs_) =255;
 
-	imwrite("/home/qbobot/Documents/Images_plugin/pathbubu.jpg",draw);
 
 
 	ROS_INFO("Computing path in World");
@@ -244,7 +234,7 @@ void testCostmap::computePathWorld(std::vector<geometry_msgs::PoseStamped>& path
 	double x,y;
 	geometry_msgs::PoseStamped pose;
 	ros::Time plan_time = ros::Time::now();
-	for (std::vector<int>::iterator it=pathcm_.begin(); it!=pathcm_.end();it++)
+	for (std::vector<int>::iterator it=pathcm_.begin(); it!=pathcm_.end()-1;it++)
 	{
 
 		mapToWorld((double)(*it%xs_),(double)(*it/xs_),x,y);
