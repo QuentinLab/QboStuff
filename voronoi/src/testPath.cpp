@@ -100,10 +100,18 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	computePathVoro();
 
 	ROS_INFO("Computing how to get on Skeleton");
-	
-	startpath_ = findPathFree(startcm_,startVoro_);
-	goalpath_ = findPathFree(goalVoro_,goalcm_);
 
+	ROS_INFO("Start path...");
+	startpath_ = findPathFree(startcm_,startVoro_);
+	getchar();
+
+	ROS_INFO("Goal path_");
+	goalpath_ = findPathFree(goalVoro_,goalcm_);
+	
+	if (startpath_.empty())
+	{
+		ROS_INFO("Start path is empty, exiting");
+	}
 	ROS_INFO("Recreating total path");
 
 	pathcm_.insert(pathcm_.begin(),startpath_.begin(),startpath_.end());
@@ -190,8 +198,10 @@ std::vector<int> testCostmap::findPathFree(int a,int b)
 	int bx = b%xs_;
 	int by = b/xs_;
 	int i = 0;
-	if (bx - ax >= 0)
+	if (bx-ax >= 0)
 	{
+		ROS_INFO("Positive deltax : %d",bx-ax);
+
 		for (i = 1; i <= bx -ax; i++)
 		{
 			path_free.push_back(ax + i + ay*xs_);
@@ -199,7 +209,8 @@ std::vector<int> testCostmap::findPathFree(int a,int b)
 	}
 	else
 	{
-		for (i = 1; i <= bx - ax; i++)
+		ROS_INFO("Negative dx : %d",bx-ax);
+		for (i = 1; i <= ax-bx; i++)
 		{
 			path_free.push_back(ax-i+ay*xs_);
 		}
@@ -213,7 +224,7 @@ std::vector<int> testCostmap::findPathFree(int a,int b)
 	}
 	else
 	{
-		for (i=1;i<=by-ay;i++)
+		for (i=1;i<=ay-by;i++)
 		{
 			path_free.push_back(bx+(ay-i)*xs_);
 		}
