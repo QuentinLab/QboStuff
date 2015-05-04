@@ -128,7 +128,7 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 	{
 		if (distance_transform_[i] == 0 || distance_transform_[i] == -1)
 		{
-			draw.at<unsigned char>(i%xs_,i/xs_) = 255;
+			draw.at<unsigned char>(i%xs_,i/xs_) = 125;
 		}
 		else
 		{
@@ -138,7 +138,7 @@ bool testCostmap::makePlan(const geometry_msgs::PoseStamped& start, const geomet
 
 	for (std::vector<int>::iterator it = pathcm_.begin(); it!= pathcm_.end();it++)
 	{
-		draw.at<unsigned char>(*it%xs_,*it/xs_) = 140;
+		draw.at<unsigned char>(*it%xs_,*it/xs_) = 255;
 	}
 	imwrite("/home/qbobot/Documents/Images_plugin/FINALPATH.jpg",draw);
 
