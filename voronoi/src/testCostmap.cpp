@@ -579,49 +579,78 @@ void testCostmap::computeBrushfire()
 
 	computeGraph();
 }
+
+void testCostmap::sorting(double* arr, int left, int right, int* ind)
+{
+	int i = left, j = right;
+	int tmp;
+	double pivot = arr[(left + right) / 2];
+	/* partition */
+	while (i <= j) 
+	{
+		while (arr[i] < pivot)
+		{
+			i++;
+		}
+		while (arr[j] > pivot)
+		{
+			j--;
+		}
+		if (i <= j) 
+		{
+			tmp = arr[i];
+			ind[i] = j;
+			ind[j] = i;
+			arr[i] = arr[j];
+			arr[j] = tmp;
+			i++;
+			j--;
+		}
+	};
+/* recursion */
+
+	if (left < j)
+	{
+		sorting(arr, left, j,ind);
+	}
+	if (i < right)
+	{
+		sorting(arr, i, right,ind);
+	}
+}
 void testCostmap::orderModule()
 {
 	double* order = new double[total_size_];	
 	int* order_ind = new int[total_size_];
 	int p,h;
+
+	for (p=0; p < total_size_;p++)
+	{
+		order_ind[p] = p;
+	}
 	for ( p = 0; p < total_size_; p++)
 	{
 		order[p] = module_[p];
 	}
-	int max_inter,a,b,ind;
-	for (p = 0; p < 1500;p++)
-	{
-		max_inter = 65000;
-		ind = 0;
-		for (h = 0; h <total_size_ - p; h++)
-		{
-			if (max_inter > order[h] && order[h] != -1)
-			{	
-				max_inter = order[h];
-				ind = h;
-			}
-		}
-		a = order[ind];
-		order[ind] = order[total_size_ - p - 1];
-		order[total_size_ - p - 1] = a;
-		order_ind[p] = ind;
-	}
-	
-	// Tried using the function std::sort to sort the module... did not work
-
-	/*for (p=0;p<total_size_;p++)
-	{
-		order_ind[p] = p;
-	}
-
-	printf("Gonna sort...");
-	std::sort(order_ind,order_ind+total_size_, [&](size_t a,size_t b){return order[a] < order[b];});
-	printf("Order[total_size_ - 200] = %f\n",order[total_size_-200]);
-	for (p = total_size_-20;p<total_size_;p++)
-	{
-		printf("Order[%d] = %f\n",p,order[p]);
-	}
-	exit(0);*/
+//	int max_inter,a,b,ind;
+//	for (p = 0; p < 1500;p++)
+//	{
+//		max_inter = 65000;
+//		ind = 0;
+//		for (h = 0; h <total_size_ - p; h++)
+//		{
+//			if (max_inter > order[h] && order[h] != -1)
+//			{	
+//				max_inter = order[h];
+//				ind = h;
+//			}
+//		}
+//		a = order[ind];
+//		order[ind] = order[total_size_ - p - 1];
+//		order[total_size_ - p - 1] = a;
+//		order_ind[p] = ind;
+//	}
+	sorting(order, 0, total_size_ - 1, order_ind);	
 
 	/* Image of the minimum of gradient */
 	ROS_INFO("COMPUTING SKELETON FILE");

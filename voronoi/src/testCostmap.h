@@ -73,6 +73,7 @@ public:
 	void queueInit(); // Initialize queue for distance transform
 	void computeGrad(); // Compute gradient and module of gradient over the map
 	void orderModule(); // Find the module minimum to obtain skeleton
+	void sorting(double* arr,int left,int right,int* ind); // Sorting tables with indexes 
 	void computeGraph(); // Compute graph (order the pixels of the skeleton)
 	int computeClosest(int goal); //Compute closest point of the Voronoi diagram to "goal"
 	std::vector<int> findPathFree(int a,int b); //Compute straight line path between a (start) and b (goal)
