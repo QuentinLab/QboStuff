@@ -583,7 +583,8 @@ void testCostmap::computeBrushfire()
 void testCostmap::sorting(double* arr, int left, int right, int* ind)
 {
 	int i = left, j = right;
-	int tmp;
+	double tmp;
+	int tmp2;
 	double pivot = arr[(left + right) / 2];
 	/* partition */
 	while (i <= j) 
@@ -599,8 +600,9 @@ void testCostmap::sorting(double* arr, int left, int right, int* ind)
 		if (i <= j) 
 		{
 			tmp = arr[i];
-			ind[i] = j;
-			ind[j] = i;
+			tmp2 = ind[i];
+			ind[i] = ind[j];
+			ind[j] = tmp2;
 			arr[i] = arr[j];
 			arr[j] = tmp;
 			i++;
@@ -670,10 +672,16 @@ void testCostmap::orderModule()
 		}
 	}
 	count_skel = 0;
-	for (i=0; i<2000; i++)
+	int uselessmodule = 0;
+	while (module_[order_ind[uselessmodule]] == -1)
+	{
+		uselessmodule++;
+	}
+	for (i=uselessmodule; i<uselessmodule + 1500; i++)
 	{
 		if (distance_transform_[order_ind[i]] >= 6)
 		{
+			printf("Hello, we're entering here\n");
 			res.at<unsigned char>(order_ind[i]%xs_,order_ind[i]/xs_) = 140;
 			skeleton_.push_back(order_ind[i]);
 			count_skel++;
