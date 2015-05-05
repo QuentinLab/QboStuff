@@ -19,12 +19,13 @@ void QboTransformer::OnInit()
 void QboTransformer::pointcloudCallback(const sensor_msgs::PointCloud2 &pc)
 {
 	ROS_INFO("Receiving point cloud");
-	cout <<		"frame_id =" << pc.header.frame_id << endl;
-	cout <<	 	"width =" << pc.width << endl;
-	cout <<		"height=" << pc.height << endl;
-	cout <<		"rowstep =" << 	pc.row_step << endl;
-	cout << 	"point step=" << pc.point_step << endl;
-	cout << 	"is dense=" << pc.is_dense << endl;
+	//cout <<		"frame_id =" << pc.header.frame_id << endl;
+	//cout <<	 	"width =" << pc.width << endl;
+	//cout <<		"height=" << pc.height << endl;
+	//cout <<		"rowstep =" << 	pc.row_step << endl;
+	//cout << 	"point step=" << pc.point_step << endl;
+	//cout << 	"is dense=" << pc.is_dense << endl;
+	printf("Is dense =  %d\n",pc.is_dense);
 	/*try
 	{
 		listener_.lookupTransform("/map","/camera_depth_optical_frame",ros::Time(0),transform_);

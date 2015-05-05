@@ -59,34 +59,34 @@ void QboPerceptor::facesCallback(const qbo_face_xtion::FacesPos & faces)
 				else
 				{
 					cout << "C'est un pas un NAN" << endl;
-				}
 
-				for (i=1;i<(int)1./_resolution/2;i++)
-				{
-					_robot_pose.pose.position.x = _pose_face.position.x - 1 + i*_resolution*4;
-					for (j=1;j<(int)1./_resolution/2;j++)
+					for (i=1;i<(int)1./_resolution/2;i++)
 					{
-						_robot_pose.pose.position.y = _pose_face.position.y- 1 + j*_resolution*4;
-						double scalar = (_pose_face.position.x - _robot_pose.pose.position.x)/sqrt(pow(_pose_face.position.x - _robot_pose.pose.position.x,2)+pow(_pose_face.position.y - _robot_pose.pose.position.y,2));
-						double angle = acos(scalar);
+						_robot_pose.pose.position.x = _pose_face.position.x - 1 + i*_resolution*4;
+						for (j=1;j<(int)1./_resolution/2;j++)
+						{
+							_robot_pose.pose.position.y = _pose_face.position.y- 1 + j*_resolution*4;
+							double scalar = (_pose_face.position.x - _robot_pose.pose.position.x)/sqrt(pow(_pose_face.position.x - _robot_pose.pose.position.x,2)+pow(_pose_face.position.y - _robot_pose.pose.position.y,2));
+							double angle = acos(scalar);
 
-						if (_pose_face.position.y - _robot_pose.pose.position.y < 0)
-						{
-							_robot_pose.pose.orientation = tf::createQuaternionMsgFromYaw(-angle);	
+							if (_pose_face.position.y - _robot_pose.pose.position.y < 0)
+							{
+								_robot_pose.pose.orientation = tf::createQuaternionMsgFromYaw(-angle);	
+							}
+							else
+							{
+								_robot_pose.pose.orientation = tf::createQuaternionMsgFromYaw(angle);
+							}
+							if (i*_resolution*4 != 1 && j*_resolution*4 !=0)
+							{
+								_possible_poses.poses.push_back(_robot_pose.pose);
+							}	
 						}
-						else
-						{
-							_robot_pose.pose.orientation = tf::createQuaternionMsgFromYaw(angle);
-						}
-						if (i*_resolution*4 != 1 && j*_resolution*4 !=0)
-						{
-							_possible_poses.poses.push_back(_robot_pose.pose);
-						}	
 					}
+					_possible_poses.header.stamp = ros::Time::now();
+					_possible_poses_pub.publish(_possible_poses);
+					_possible_poses.poses.clear();
 				}
-				_possible_poses.header.stamp = ros::Time::now();
-				_possible_poses_pub.publish(_possible_poses);
-				_possible_poses.poses.clear();
 
 			}
 			/*else

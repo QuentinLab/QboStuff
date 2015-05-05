@@ -31,6 +31,7 @@ void FaceDetector::OnInit()
 
 void FaceDetector::imageCallback(const sensor_msgs::Image::ConstPtr& image_ptr)
 {
+	faces_.clear();
 	try
 	{
 		cv_ptr_ = cv_bridge::toCvCopy(image_ptr,sensor_msgs::image_encodings::RGB8);
@@ -49,10 +50,11 @@ void FaceDetector::imageCallback(const sensor_msgs::Image::ConstPtr& image_ptr)
 
 	if (!faces_.empty())
 	{
+		printf("Face detected, publishing\n");
 		for (vector<Rect>::const_iterator r = faces_.begin(); r!=faces_.end();r++)
 		{
-			oneFace_.x = r->x+r->width;
-			oneFace_.y = r->y+r->height;
+			oneFace_.x = r->x+r->width/2;
+			oneFace_.y = r->y+r->height/2;
 			oneFace_.z = 0;
 			faces_positions_.points.push_back(oneFace_);
 			faces_positions_.image_width = cv_ptr_->image.cols;
