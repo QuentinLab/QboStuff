@@ -16,7 +16,7 @@ void QboLocalizer::Correlation()
 	double Max = 0;
 	int SampleDelay = 0;
 	int i;
-	for(i=0; i < (2 * n_ + 1); i+=1)
+	for(i=0; i < (2 * n_ + 1); i++)
 	{
 		Ycorr_[i] = 0;
 		Xdec_[i] = i - n_;
@@ -43,7 +43,7 @@ void QboLocalizer::Correlation()
 		}
 	}
 	Delay_ = SampleDelay;
-	cout << "Max :" << Max << endl;
+	cout << "Sample delay :" << SampleDelay << endl;
 }
 
 void QboLocalizer::TetaRad()
@@ -54,6 +54,7 @@ void QboLocalizer::TetaRad()
 	}
 	else
 	{
+		printf("Delay < 0\n");
 		Teta_ = (PI - acos((-(double)Delay_/sampleRate_)*v_/D_));
 	}
 }
@@ -63,15 +64,16 @@ void QboLocalizer::OnInit()
 	n_ = 20; // Number of samples tested for correlation (both left and right)
 	int sampleCorr = 40; // Size of the correlation table 
 	sampleRate_ = 44100;
-	buffersize_ = 44100;
+	buffersize_ = 22050;
 	left_ = (double*) malloc(sizeof(double)*buffersize_);
 	right_ = (double*) malloc(sizeof(double)*buffersize_);
 	Ycorr_ = (double*) malloc(sizeof(double)*sampleCorr);
 	Xdec_ = (int*) malloc(sizeof(int)*sampleCorr);
 	D_ = 0.1475; // Distance between the two microphones
-	v_ = 340.0;
+	v_ = 340.;
 
 	angle_pub_ = private_nh_.advertise<std_msgs::Float64>("/audio_angle",100);
+	angle_degree_pub = private_nh_.advertise<std_msgs::Float64>("/audio_degree",100);
 	samples_sub_ = private_nh_.subscribe("/qbo_soundstream/samples",1,&QboLocalizer::sampleCallback,this);
 }
 
@@ -83,15 +85,19 @@ void QboLocalizer::sampleCallback(const std_msgs::Int16MultiArray& samples)
 		left_[i] = (double)samples.data[2*i];
 		right_[i] = (double)samples.data[2*i+1];
 	}
-	meanleft_ = computeMean(left_);
-	meanright_ = computeMean(right_);
-	stdevleft_ = computeStdev(left_,meanleft_);
-	stdevright_ = computeStdev(right_,meanright_);
+	meanleft_ = 0;//computeMean(left_);
+	meanright_ = 0;//computeMean(right_);
+	stdevleft_ = 1;//computeStdev(left_,meanleft_);
+	stdevright_ = 1;//computeStdev(right_,meanright_);
 	Correlation();
 	TetaRad();
 	Teta_ += -PI/2 ;
 	angle_.data = Teta_;
 	angle_pub_.publish(angle_);
+
+	std_msgs::Float64 degree;
+	degree.data = Teta_/PI*180.;
+	angle_degree_pub.publish(degree);
 	cout << "Angle : " << Teta_ << endl;
 }
 

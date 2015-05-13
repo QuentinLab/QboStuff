@@ -40,7 +40,7 @@
   </node>-->
 
 
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/chartreuse_07052015.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/final0902.yaml" />
 
    <!--  <group>
        <node name="amcl" pkg="amcl" type="amcl"> 

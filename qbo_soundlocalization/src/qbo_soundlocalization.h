@@ -25,6 +25,7 @@ private:
 	ros::NodeHandle private_nh_; // Node handle
 	ros::Subscriber samples_sub_; // Subscriber to samples topic
 	ros::Publisher angle_pub_;	
+	ros::Publisher angle_degree_pub;
 	std_msgs::Float64 angle_;
 	/* Some settings for the sound */
 

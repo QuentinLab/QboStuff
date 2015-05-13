@@ -28,6 +28,8 @@ void Qbosoundstream::read_samples()
 	std::vector<short int> data;
 	while (ros::ok())
 	{
+//		err_ = Pa_WriteStream( stream_,buffer_, FRAMES_PER_BUFFER_ );
+
 		err_ = Pa_ReadStream(stream_,buffer_,FRAMES_PER_BUFFER_);
 		if (err_)
 		{
@@ -52,7 +54,7 @@ void Qbosoundstream::read_samples()
 void Qbosoundstream::OnInit()
 {
 	NUM_CHANNELS_ = 2;
-	FRAMES_PER_BUFFER_ = 44100;
+	FRAMES_PER_BUFFER_ = 22050;
 	SAMPLE_RATE_ = 44100;
 	err_ = Pa_Initialize();
 	deviceNum_ = 4;
@@ -69,6 +71,15 @@ void Qbosoundstream::OnInit()
 	inputParameters_.hostApiSpecificStreamInfo = NULL;
 
 	buffer_ = (short int*) malloc(sizeof(short int)*FRAMES_PER_BUFFER_*2);
+
+
+	/* Testing for play back */
+	/*PaStreamParameters outputParameters;
+	outputParameters.device = 0;//default output device 
+	outputParameters.channelCount = NUM_CHANNELS_;
+	outputParameters.sampleFormat = paInt16;
+	outputParameters.suggestedLatency = Pa_GetDeviceInfo( outputParameters.device )->defaultHighOutputLatency;
+	outputParameters.hostApiSpecificStreamInfo = NULL;*/
 	
 	// Opening stream
 
