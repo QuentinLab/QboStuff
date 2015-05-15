@@ -7,6 +7,7 @@ project(qbo_soundstream)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -50,11 +51,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+ add_service_files(
+   FILES
+   soundAcquisition.srv 
+ )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -64,10 +64,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -113,7 +113,16 @@ link_directories(/usr/local/lib)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(qbo_soundstream ${catkin_LIBRARIES} portaudio rt m )
 
-#############
+
+add_executable(qbo_request src/qbo_request.cpp)
+
+target_link_libraries(qbo_request ${catkin_LIBRARIES} portaudio rt m )
+
+add_executable(askforsound src/askforsound.cpp)
+target_link_libraries(askforsound ${catkin_LIBRARIES})
+
+
+############
 ## Install ##
 #############
 
