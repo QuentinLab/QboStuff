@@ -51,6 +51,8 @@
 //#include <qbo_arduqbo/Nose.h>
 #include <qbo_face_xtion/FacesPos.h>
 #include <geometry_msgs/Point.h>
+#include <std_msgs/UInt8.h>
+
 #define HEAD_SIZE 0.20
 
 
@@ -80,6 +82,11 @@ private:
 	ros::Publisher faces_pub_;
 	qbo_face_xtion::FacesPos faces_positions_;
 	geometry_msgs::Point oneFace_;
+
+
+
+	std_msgs::UInt8 face_found_;
+	ros::Publisher face_found_pub_;
 	/*
 	 * Elements for the face recognition client
 	 */

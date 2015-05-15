@@ -1,14 +1,23 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(cancel_goals)
+project(qbo_multimodal_perception)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
+  pcl_conversions
+  pcl_ros
+  qbo_perceptor
+  qbo_soundstream
+  roscpp
+  rospy
+  std_msgs
+  tf
+  visualization_msgs
+  voronoi
   actionlib
   move_base_msgs
-  std_msgs
-  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -68,7 +77,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   move_base_msgs
+#   geometry_msgs#   std_msgs#   visualization_msgs
 # )
 
 ###################################
@@ -82,8 +91,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES cancelGoals
-#  CATKIN_DEPENDS actionlib move_base_msgs roscpp
+#  LIBRARIES qbo_multimodal_perception
+#  CATKIN_DEPENDS geometry_msgs pcl_conversions pcl_ros qbo_perceptor qbo_soundstream roscpp rospy std_msgs tf visualization_msgs voronoi
 #  DEPENDS system_lib
 )
 
@@ -99,28 +108,21 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(cancelGoals
-#   src/${PROJECT_NAME}/cancelGoals.cpp
+# add_library(qbo_multimodal_perception
+#   src/${PROJECT_NAME}/qbo_multimodal_perception.cpp
 # )
 
 ## Declare a cpp executable
- add_executable(cancel_goals src/simple_navigation_cancel.cpp)
+ add_executable(qbo_multimodal_organizer src/qbo_multimodal_organizer.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(cancelGoals_node cancelGoals_generate_messages_cpp)
+# add_dependencies(qbo_multimodal_perception_node qbo_multimodal_perception_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(cancel_goals
+ target_link_libraries(qbo_multimodal_organizer
    ${catkin_LIBRARIES}
  )
-
- add_executable(organizer src/organizer.cpp)
- target_link_libraries(organizer
-   ${catkin_LIBRARIES}
- )
-
-
 
 #############
 ## Install ##
@@ -137,7 +139,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS cancelGoals cancelGoals_node
+# install(TARGETS qbo_multimodal_perception qbo_multimodal_perception_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -162,7 +164,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_cancelGoals.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_qbo_multimodal_perception.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

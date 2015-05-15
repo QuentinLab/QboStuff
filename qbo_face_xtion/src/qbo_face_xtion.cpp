@@ -25,6 +25,9 @@ void FaceDetector::OnInit()
 		return;
 	}
 	faces_pub_ = private_nh_.advertise<qbo_face_xtion::FacesPos>("/qbo/facesdetected",1,this);
+	face_found_pub_ = private_nh_.advertise<std_msgs::UInt8>("/face_found",1,this);
+
+
 	image_sub_ = private_nh_.subscribe(topic_image_,1,&FaceDetector::imageCallback,this);
 	
 }
@@ -60,6 +63,7 @@ void FaceDetector::imageCallback(const sensor_msgs::Image::ConstPtr& image_ptr)
 			faces_positions_.image_width = cv_ptr_->image.cols;
 			faces_positions_.image_height = cv_ptr_->image.rows;
 		}
+		face_found_.data = 1;
 	}
 	else
 	{
@@ -67,8 +71,10 @@ void FaceDetector::imageCallback(const sensor_msgs::Image::ConstPtr& image_ptr)
 		oneFace_.y = -1000;
 		oneFace_.z = -1000;
 		faces_positions_.points.push_back(oneFace_);
+		face_found_.data = 0;
 	}
 	faces_pub_.publish(faces_positions_);
+	face_found_pub_.publish(face_found_);
 	faces_positions_.points.clear();
 }
 
