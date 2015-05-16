@@ -1,0 +1,7 @@
+geometry_msgs/PoseArray semantic_poses
+uint8[] visited_semantic
+
+---
+
+geometry_msgs/Pose inVoro
+uint8 index

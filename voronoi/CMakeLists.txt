@@ -30,6 +30,7 @@ add_service_files(
 	DIRECTORY srv
 	FILES
 	MakemyNavPlan.srv
+	FindClosestInPoseArray.srv
 )
 
 generate_messages(

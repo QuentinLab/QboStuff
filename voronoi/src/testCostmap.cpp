@@ -173,6 +173,87 @@ bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi
 	return true;
 }
 
+
+bool testCostmap::computeClosestPointService(voronoi::FindClosestInPoseArray::Request& req, voronoi::FindClosestInPoseArray::Response& resp)
+{
+	unsigned int mx,my;//Used to compute coordinate in global frames
+	int min,count=0;
+	int dist_min_ = 1000000;
+	double x,y; // Will contain the the coordinate of the closest pose in the world
+ 
+	// Acquire robot position in the world
+
+	tf::Stamped<tf::Pose> global_pose;
+	costmap_ros_->getRobotPose(global_pose);
+	vector<geometry_msgs::PoseStamped> path;
+	geometry_msgs::PoseStamped start;
+	start.header.stamp = global_pose.stamp_;
+	start.header.frame_id = global_pose.frame_id_;
+	start.pose.position.x = global_pose.getOrigin().x();
+	start.pose.position.y = global_pose.getOrigin().y();
+	start.pose.position.z = global_pose.getOrigin().z();
+	start.pose.orientation.x = global_pose.getRotation().x();
+	start.pose.orientation.y = global_pose.getRotation().y();
+	start.pose.orientation.z = global_pose.getRotation().z();
+	start.pose.orientation.w = global_pose.getRotation().w();
+	
+	// Transform robot position into the map frame
+
+	if (!costmap_->worldToMap(start.pose.position.x,start.pose.position.y,mx,my))
+	{
+		ROS_WARN("The robot's position is off the mapp... cannot process.");
+		return  false;
+	}
+	else
+	{
+		startcm_ = mx + my*xs_;
+	}
+
+	// Compute closest position to the robot in Voronoi
+
+	startVoro_ = computeClosest(startcm_);
+
+	// Compute distances thanks to Dijkstra
+
+	dijkstraPath(startVoro_);
+
+	// Iterate through poses to find the closest
+
+	for (std::vector<geometry_msgs::Pose>::iterator it = req.semantic_poses.poses.begin(); it !=req.semantic_poses.poses.end(); it++)
+	{
+		count++;
+		if (!costmap_->worldToMap(it->position.x,it->position.y,mx,my))
+		{
+			ROS_WARN("The goal position is off the map ... doing nothing");
+		}
+		else
+		{
+			goalcm_ = mx + my*xs_;
+		}
+		goalVoro_ = computeClosest(goalcm_);
+		if (distance_[goalVoro_] < dist_min_ && distance_transform_[goalVoro_] != -1 )
+		{
+			dist_min_ = distance_[goalVoro_];
+			min = count;
+		}
+		
+	}
+
+	// Compute coordinate of closest point in world
+
+	mapToWorld((double)(min%xs_),(double)(min/xs_),x,y);
+
+	// Put position and number in reponse
+	geometry_msgs::Pose closestPose;
+	closestPose.position.x = x;
+	closestPose.position.y = y;
+	closestPose.position.z = 0;
+	resp.inVoro = closestPose;
+	resp.index = min;
+
+	return 1;
+
+}
 std::vector<int> testCostmap::findPathFree(int a,int b)
 {
 	std::vector<int> path_free;

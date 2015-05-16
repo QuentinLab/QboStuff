@@ -14,6 +14,7 @@
 #include <nav_core/base_global_planner.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
 #include <angles/angles.h>
 #include <base_local_planner/world_model.h>
 #include <base_local_planner/costmap_model.h>
@@ -23,7 +24,8 @@
 #include <cvaux.h>
 #include <cxmisc.h>
 
-#include<voronoi/MakemyNavPlan.h>
+#include <voronoi/MakemyNavPlan.h>
+#include <voronoi/FindClosestInPoseArray.h>
 
 #define COST_UNKNOWN_ROS -1 // 255 = Unknown cost
 #define COST_OBS 254 // 254 = forbidden region
@@ -55,6 +57,7 @@ public:
 	void initialize(std::string name,costmap_2d::Costmap2DROS* costmap_ros);
 	bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>&plan);
 	bool makePlanService(voronoi::MakemyNavPlan::Request& req, voronoi::MakemyNavPlan::Response& resp);
+	bool computeClosestPointService(voronoi::FindClosestInPoseArray::Request& req, voronoi::FindClosestInPoseArray::Response& resp);
 	void poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal);
 
 
@@ -87,6 +90,7 @@ private:
 	ros::NodeHandle private_nh_; // Node handle
 	ros::Subscriber pose_sub_; // Subscriber to get goal
 	ros::ServiceServer make_plan_srv_; // Service advertiser
+	ros::ServiceServer compute_closest_point_srv; // Service advertiser to compute closest in point array
 	ros::Publisher plan_pub_;
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class
