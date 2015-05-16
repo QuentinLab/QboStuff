@@ -17,6 +17,7 @@
 
 //Including stuff to make plans
 #include <voronoi/MakeNavPlan.h> // Request for a path to goal
+#include <voronoi/FindClosestInPoseArray.h> //Find Closest point
 #include <qbo_soundstream/soundAcquisition.h> //For listening a number of second
 
 //Definitions and namespaces
@@ -36,9 +37,19 @@ private:
 	MoveBaseClient client_; // Client for actions
 	ros::ServiceClient plan_client_; //Client for making plans
 	ros::ServiceClient listen_client_; // Client for listening
+	ros::ServiceClient find_closest_client_; //Client to chose next destination
+	voronoi::MakeNavPlan plan_maker_; //Request for plan
+	voronoi::FindClosestInPoseArray closest_asker_; // Request for closest pose
+	qbo_soundstream::soundAcquisition sound_asker_ ;//Request for sound delays 
+
+
 	int robot_mode_; // Mode : 1 = Patrol; 2 = Audio; 3 = Video
 	geometry_msgs::PoseStamped next_move_;
 	move_base_msgs::MoveBaseGoal goal_;
+	//unsigned char* semantic_visited_;
+	std::vector<unsigned char> semantic_visited_;
+
+
 	//Functions
 	void OnInit();
 	void faceCallback(const geometry_msgs::PoseStamped& face_pos);

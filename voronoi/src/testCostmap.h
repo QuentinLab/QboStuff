@@ -90,7 +90,7 @@ private:
 	ros::NodeHandle private_nh_; // Node handle
 	ros::Subscriber pose_sub_; // Subscriber to get goal
 	ros::ServiceServer make_plan_srv_; // Service advertiser
-	ros::ServiceServer compute_closest_point_srv; // Service advertiser to compute closest in point array
+	ros::ServiceServer compute_closest_point_srv_; // Service advertiser to compute closest in point array
 	ros::Publisher plan_pub_;
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class

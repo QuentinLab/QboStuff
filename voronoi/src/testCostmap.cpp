@@ -40,6 +40,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	computeBrushfire();
 	plan_pub_ = private_nh_.advertise<nav_msgs::Path>("plan",1);
 	make_plan_srv_ = private_nh_.advertiseService("make_plan",&testCostmap::makePlanService,this);
+	compute_closest_point_srv_ = private_nh_.advertiseService("compute_closest_point",&testCostmap::computeClosestPointService,this);
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
 
