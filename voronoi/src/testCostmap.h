@@ -26,6 +26,7 @@
 
 #include <voronoi/MakemyNavPlan.h>
 #include <voronoi/FindClosestInPoseArray.h>
+#include <voronoi/Feasability.h>
 
 #define COST_UNKNOWN_ROS -1 // 255 = Unknown cost
 #define COST_OBS 254 // 254 = forbidden region
@@ -58,6 +59,7 @@ public:
 	bool makePlan(const geometry_msgs::PoseStamped& start, const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>&plan);
 	bool makePlanService(voronoi::MakemyNavPlan::Request& req, voronoi::MakemyNavPlan::Response& resp);
 	bool computeClosestPointService(voronoi::FindClosestInPoseArray::Request& req, voronoi::FindClosestInPoseArray::Response& resp);
+	bool feasabilityService(voronoi::Feasability::Request& req, voronoi::Feasability::Response& resp);
 	void poseCallback(const geometry_msgs::PoseStamped::ConstPtr & goal);
 
 
@@ -91,6 +93,7 @@ private:
 	ros::Subscriber pose_sub_; // Subscriber to get goal
 	ros::ServiceServer make_plan_srv_; // Service advertiser
 	ros::ServiceServer compute_closest_point_srv_; // Service advertiser to compute closest in point array
+	ros::ServiceServer feasability_srv_; //Service advertiser to check for feasability in the audio cone
 	ros::Publisher plan_pub_;
 	costmap_2d::Costmap2DROS* costmap_ros_; //Costmap wrapper for ROS
 	costmap_2d::Costmap2D* costmap_; // Costmap class

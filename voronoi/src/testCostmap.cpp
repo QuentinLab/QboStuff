@@ -40,6 +40,7 @@ void testCostmap::initialize(std::string name,costmap_2d::Costmap2DROS* costmap_
 	computeBrushfire();
 	plan_pub_ = private_nh_.advertise<nav_msgs::Path>("plan",1);
 	make_plan_srv_ = private_nh_.advertiseService("make_plan",&testCostmap::makePlanService,this);
+	feasability_srv_ = private_nh_.advertiseService("feasability",&testCostmap::feasabilityService,this);
 	compute_closest_point_srv_ = private_nh_.advertiseService("compute_closest_point",&testCostmap::computeClosestPointService,this);
 	private_nh_.subscribe<geometry_msgs::PoseStamped>("goal",1,&testCostmap::poseCallback,this);
 }
@@ -178,7 +179,7 @@ bool testCostmap::makePlanService(voronoi::MakemyNavPlan::Request & req, voronoi
 bool testCostmap::computeClosestPointService(voronoi::FindClosestInPoseArray::Request& req, voronoi::FindClosestInPoseArray::Response& resp)
 {
 	unsigned int mx,my;//Used to compute coordinate in global frames
-	int min,count=0;
+	int min = 255,count=0;
 	int dist_min_ = 1000000;
 	double x,y; // Will contain the the coordinate of the closest pose in the world
  
@@ -223,19 +224,23 @@ bool testCostmap::computeClosestPointService(voronoi::FindClosestInPoseArray::Re
 	for (std::vector<geometry_msgs::Pose>::iterator it = req.semantic_poses.poses.begin(); it !=req.semantic_poses.poses.end(); it++)
 	{
 		count++;
-		if (!costmap_->worldToMap(it->position.x,it->position.y,mx,my))
+
+		if (req.visited_semantic[count] == 0)
 		{
-			ROS_WARN("The goal position is off the map ... doing nothing");
-		}
-		else
-		{
-			goalcm_ = mx + my*xs_;
-		}
-		goalVoro_ = computeClosest(goalcm_);
-		if (distance_[goalVoro_] < dist_min_ && distance_transform_[goalVoro_] != -1 )
-		{
-			dist_min_ = distance_[goalVoro_];
-			min = count;
+			if (!costmap_->worldToMap(it->position.x,it->position.y,mx,my))
+			{
+				ROS_WARN("The goal position is off the map ... doing nothing");
+			}
+			else
+			{
+				goalcm_ = mx + my*xs_;
+			}
+			goalVoro_ = computeClosest(goalcm_);
+			if (distance_[goalVoro_] < dist_min_ && distance_transform_[goalVoro_] != -1 )
+			{
+				dist_min_ = distance_[goalVoro_];
+				min = count;
+			}
 		}
 		
 	}
@@ -255,6 +260,38 @@ bool testCostmap::computeClosestPointService(voronoi::FindClosestInPoseArray::Re
 	return 1;
 
 }
+
+bool testCostmap::feasabilityService(voronoi::Feasability::Request& req, voronoi::Feasability::Response& resp)
+{
+	resp.feasible_poses.poses.clear();
+	unsigned int mx,my;
+	int posecm;
+	for (std::vector<geometry_msgs::Pose>::iterator it = req.poses.poses.begin(); it !=req.poses.poses.end(); it++)
+	{
+
+		if (!costmap_->worldToMap(it->position.x,it->position.y,mx,my))
+		{
+			ROS_WARN("The goal position is off the map ... doing nothing");
+		}
+		else
+		{
+			posecm = mx + my*xs_;
+		}
+		if (distance_transform_[posecm] != -1)
+		{
+			resp.feasible_poses.poses.push_back(*it);
+		}
+	}
+	if (!resp.feasible_poses.poses.empty())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 std::vector<int> testCostmap::findPathFree(int a,int b)
 {
 	std::vector<int> path_free;

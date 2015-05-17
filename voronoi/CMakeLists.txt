@@ -31,6 +31,7 @@ add_service_files(
 	FILES
 	MakemyNavPlan.srv
 	FindClosestInPoseArray.srv
+	Feasability.srv
 )
 
 generate_messages(

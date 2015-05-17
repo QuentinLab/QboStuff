@@ -53,6 +53,7 @@ void QboSoundRequest::OnInit()
 bool QboSoundRequest::acquireService(qbo_soundstream::soundAcquisition::Request& req, qbo_soundstream::soundAcquisition::Response& resp)
 {
 	int i,j; // loops
+	resp.delays.clear();
 
 	// Reading the samples for the needed time
 
@@ -83,8 +84,11 @@ bool QboSoundRequest::acquireService(qbo_soundstream::soundAcquisition::Request&
 		/* Compute the angle */
 //		TetaRad();
 	}
-
-	resp.delays.push_back(1);
+	
+	for (i = 0; i < NUMBER_BUFFER_;i++)
+	{
+		resp.delays.push_back((unsigned int)delays_[i]);
+	}
 	return true;
 }
 
