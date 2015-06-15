@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<package>
+  <name>qbo_navigation</name>
+  <version>0.1.4</version>
+  <description>The qbo_navigation package</description>
+  
+  <maintainer email="sylvain-zwolinski@orange.fr">jarvis</maintainer>
+
+  <license>BSD</license>
+
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+     <build_depend>message_generation</build_depend>
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+     <run_depend>message_runtime</run_depend> 
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>gmapping</build_depend>
+  <build_depend>move_base</build_depend>
+  <build_depend>frontier_exploration</build_depend>
+  
+  <run_depend>gmapping</run_depend>
+  <run_depend>move_base</run_depend>
+  <run_depend>frontier_exploration</run_depend>
+    
+  <build_depend>base_local_planner</build_depend>
+  <build_depend>clear_costmap_recovery</build_depend>
+  <build_depend>navfn</build_depend>
+  <build_depend>rotate_recovery</build_depend>
+  <build_depend>voxel_grid</build_depend>
+  
+  <run_depend>base_local_planner</run_depend>
+  <run_depend>clear_costmap_recovery</run_depend>
+  <run_depend>rotate_recovery</run_depend>
+  <run_depend>navfn</run_depend>
+  <run_depend>voxel_grid</run_depend>
+  
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

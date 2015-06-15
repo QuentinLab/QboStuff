@@ -1,0 +1,8 @@
+NavfnROS:
+  visualize_potential: false #visualisé la zone potentielle caculée (pointcloud2)
+  allow_unknown: false       #Autorise de traverser des espaces inconnu
+  
+  planner_window_x: 5.0      #Création d'une fenetre de travail afin de restreindre le travail 
+  planner_window_y: 5.0      #de Navfn (utile pour des grands Costmap)
+  
+  default_tolerance: 0.0     #Tolerance de but 

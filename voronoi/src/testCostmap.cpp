@@ -636,7 +636,7 @@ void testCostmap::computeBrushfire()
 
 	imwrite("/home/qbobot/Documents/Images_plugin/playground.jpg",img);
 	
-	Mat element = getStructuringElement(cv::MORPH_RECT,cv::Size(3,3));
+	Mat element = getStructuringElement(cv::MORPH_RECT,cv::Size(2,1));
 	Mat eroded;
 	Mat dilated;
 	erode(img,eroded,element);
@@ -679,6 +679,51 @@ void testCostmap::computeBrushfire()
 		skelcostmap_.push_back(skelit->y+skelit->x*xs_);
 	}
 
+//	// Adding second biggest contour
+//	indp = 0;
+//	max = 0;
+//	int indmax2 = 0;
+//	for (vector<vector<Point> >::iterator cont = contours.begin();cont != contours.end();cont++,indp++)
+//	{	
+//		if (cont->size() > max && indp != indmax )	
+//		{
+//			max = cont->size();
+//			skelcv_ = *cont;
+//			indmax2 = indp;
+//		}
+//	}
+//	for (vector<Point>::iterator skelit = skelcv_.begin(); skelit != skelcv_.end(); skelit++)
+//	{
+//		dst.at<unsigned char>(*skelit) = 255;
+//		skelcostmap_.push_back(skelit->y+skelit->x*xs_);
+//	}
+//
+//	it = distance_transform_;
+//	for (i = 0; i< total_size_ ; i++,it++)
+//	{
+//		if (*it == -1 || *it == 0)
+//		{
+//			dst.at<unsigned char>(i%xs_,i/xs_) = 140;
+//		}
+//	}
+//
+//	// Adding 3rd biggest contour
+//	indp = 0;
+//	max = 0;
+//	for (vector<vector<Point> >::iterator cont = contours.begin();cont != contours.end();cont++,indp++)
+//	{	
+//		if (cont->size() > max && indp != indmax &&indp != indmax2)	
+//		{
+//			max = cont->size();
+//			skelcv_ = *cont;
+//		}
+//	}
+//	for (vector<Point>::iterator skelit = skelcv_.begin(); skelit != skelcv_.end(); skelit++)
+//	{
+//		dst.at<unsigned char>(*skelit) = 255;
+//		skelcostmap_.push_back(skelit->y+skelit->x*xs_);
+//	}
+//
 	it = distance_transform_;
 	for (i = 0; i< total_size_ ; i++,it++)
 	{
@@ -796,11 +841,10 @@ void testCostmap::orderModule()
 	{
 		uselessmodule++;
 	}
-	for (i=uselessmodule; i<uselessmodule + 1500; i++)
+	for (i=uselessmodule; i<uselessmodule + 1240; i++)
 	{
-		if (distance_transform_[order_ind[i]] >= 6)
+		if (distance_transform_[order_ind[i]] >= 4)
 		{
-			printf("Hello, we're entering here\n");
 			res.at<unsigned char>(order_ind[i]%xs_,order_ind[i]/xs_) = 140;
 			skeleton_.push_back(order_ind[i]);
 			count_skel++;
@@ -925,7 +969,7 @@ void testCostmap::queueInit()
 	{
 		if (*cm == THRESH_OCC)
 		{
-			findNeighbours(i,4);
+			findNeighbours(i,8);
 			if (!neighbours_.empty())
 			{
 				for (std::vector<int>::iterator it= neighbours_.begin(); it != neighbours_.end();it++)
@@ -992,7 +1036,7 @@ void testCostmap::distanceFilling()
 		times++;
 		//printf("times = %d\n",times);
 		//findNeighbours(*it);
-		findNeighbours(priorityqueue_.at(l),4);
+		findNeighbours(priorityqueue_.at(l),8);
 		k = priorityqueue_.size();
 		if (l == firstround-1)
 		{

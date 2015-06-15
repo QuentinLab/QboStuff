@@ -1,0 +1,9 @@
+<launch>
+  
+    
+  <!-- Load rviz -->
+  
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rviz)/rviz/navigation.rviz"/> 
+ 
+    
+</launch>

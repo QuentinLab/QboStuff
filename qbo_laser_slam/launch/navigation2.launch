@@ -1,8 +1,8 @@
 <launch>
 
-  <param name="robot_description" textfile="$(find qbo_laser_slam)/urdf/qbo.urdf"/>
+  <param name="robot_description" textfile="$(find qbo_description)/robot/qbo.urdf"/>
   
-  <include file="$(find qbo_arduqbo)/launch/qbo_arduqbo_default.launch" />
+  <include file="$(find qbo_arduqbo)/launch/qbo_arduqbo_default.launch" /> 
 
   <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
 
@@ -15,8 +15,16 @@
   <param name="/$(arg kinect_camera_name)/driver/data_skip" value="5" /> 
   <param name="/$(arg kinect_camera_name)/driver/image_mode" value="9" /> 
   <param name="/$(arg kinect_camera_name)/driver/depth_mode" value="9" /> 
+ 
+
+  <!--  <include file="$(find openni2_launch)/launch/openni2.launch"/> --> 
+  <include file="$(find qbo_laser_slam)/launch/test_launches/openni2.launch"/> 
   
-  <include file="$(find openni2_launch)/launch/openni2.launch"/>
+  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="5.0" />
+  </node>
+  
 
   <group>
      <node name="depthimagetolaserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan">
@@ -24,7 +32,7 @@
         <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
         <!-- <param name="range_max" type="double" value="8.0"/> -->
        <!-- <param name="scan_time" type="double" value="0.1"/> -->
-        <param name="scan_height" type="int" value="1"/> 
+        <param name="scan_height" type="int" value="51"/> 
      </node>
   </group>
 
@@ -40,7 +48,7 @@
   </node>-->
 
 
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/final0902.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_navigation)/maps/sejour_thirdtry.yaml" />
 
    <!--  <group>
        <node name="amcl" pkg="amcl" type="amcl"> 
@@ -48,7 +56,10 @@
        </node>
     </group> -->
     
-    <include file="$(find amcl)/examples/amcl_omni.launch"/>
+   <!--  <include file="$(find amcl)/examples/amcl_diff.launch"/>  -->
+
+    <include file="$(find qbo_laser_slam)/launch/test_launches/amcl_qbo.launch"/>
+
    <!--	<node pkg="voronoi" type="testCostmap" respawn="false" name="tesCostmap" output="screen"> 
        <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
        <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />

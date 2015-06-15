@@ -1,0 +1,23 @@
+<launch>
+
+  <!--- Run the kinect -->
+  <include file="$(find qbo_bringup)/launch/includes/3dsensor.launch" >
+    <arg name="rgb_processing" value="true" />
+    <arg name="depth_registration" value="true" />
+    <arg name="depth_processing" value="true" />
+    
+    
+    <arg name="scan_topic" value="/scan" />
+  </include>
+    
+  <!-- Run the map server -->
+  <arg name="map_file" default="$(find qbo_navigation)/sejour_final.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!--- Run AMCL -->
+  <include file="$(find qbo_navigation)/launch/includes/amcl_qbo.launch" />
+       
+  <!--- Run Move Base -->
+  <include file="$(find qbo_navigation)/launch/includes/move_base_qbo.launch" /> 
+    
+</launch>

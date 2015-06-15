@@ -1,0 +1,68 @@
+#footprint: [[-0.15, -0.15], [-0.15, 0.15], [0.15, 0.15], [0.15, -0.15]]
+  robot_radius: 0.15
+            
+  transform_tolerance: 0.5
+  update_frequency: 1.0
+  publish_frequency: 0.5
+
+  #must match incoming static map
+  global_frame: /map
+  robot_base_frame: /base_footprint
+  resolution: 0.05
+
+  rolling_window: false
+  track_unknown_space: true
+
+  plugins: 
+
+     - {name: static,           type: "costmap_2d::StaticLayer"}           
+     - {name: explore_boundary, type: "frontier_exploration::BoundedExploreLayer"}
+     #Can disable sensor layer if gmapping is fast enough to update scans
+     - {name: sensor,           type: "costmap_2d::ObstacleLayer"}
+     - {name: inflation,        type: "costmap_2d::InflationLayer"}
+
+  static:
+     #Can pull data from gmapping, map_server or a non-rolling costmap            
+     map_topic: /map
+     # map_topic: move_base/global_costmap/costmap   
+     subscribe_to_updates: true
+
+  explore_boundary:
+     resize_to_boundary: false
+     frontier_travel_point: middle
+     #set to false for gmapping, true if re-exploring a known area
+     explore_clear_space: false
+
+  sensor:
+     observation_sources: scan front_left front_right
+     scan:
+        data_type: LaserScan
+        sensor_frame: camera_link
+        topic: /scan
+        marking: true
+        clearing: true
+     front_left:
+        data_type: PointCloud
+        sensor_frame: front_left_addon
+        topic: /distance_sensors_state/front_left_srf10
+        marking: true
+        clearing: true
+        min_obstacle_height: 0.0
+        max_obstacle_height: 0.2
+        obstacle_range: 0.4
+        raytrace_range: 0.5
+     front_right:
+        data_type: PointCloud
+        sensor_frame: front_right_addon
+        topic: /distance_sensors_state/front_right_srf10
+        marking: true
+        clearing: true
+        min_obstacle_height: 0.0
+        max_obstacle_height: 0.2
+        obstacle_range: 0.4
+        raytrace_range: 0.5
+
+  inflation:
+     enabled:              true
+     cost_scaling_factor:  5.0
+     inflation_radius:     0.5

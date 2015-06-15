@@ -1,0 +1,26 @@
+<launch>
+  
+    
+  <!-- Load the URDF/Xacro model of our robot -->
+  
+  <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find qbo_description)/robot/qbo.urdf.xacro'"/>
+  <param name="robot_description" command="$(arg urdf_file)"/>
+  
+  
+  
+  <!-- Launch joint_state_publisher and robot_state_publisher -->
+        
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+  	<param name="use_gui" value="true"/>
+  </node>
+  
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" type="double" value="50" />
+    <param name="tf_prefix" type="string" value="" />
+  </node>
+  
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find qbo_rviz)/rviz/model.rviz"/> 
+ 
+    
+</launch>

@@ -1,0 +1,27 @@
+<launch>
+  <!-- Robot description -->
+
+  	<param name="robot_description" textfile="$(find qbo_laser_slam)/urdf/qbo.urdf"/>
+	
+  <!-- Robot pose EKF -->
+
+  	<include file="$(find qbo_bringup)/launch/includes/robot_pose_ekf.launch" />
+
+  <!-- Publishing important transforms -->
+	<node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py"/>
+
+	<node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
+	<node name = "depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.08 head camera_link 100" /> 
+	<node name="notilt" pkg="tf" type="static_transform_publisher" args="0 0 0.4 0 0 0 base_link camera_depth_frame_notilt 100" />
+
+  <!--- Run the kinect -->
+	<include file="$(find qbo_bringup)/launch/includes/3dsensor.launch" >
+		<arg name="rgb_processing" value="true" />
+		<arg name="depth_registration" value="true" />
+		<arg name="depth_processing" value="true" />
+		<arg name="scan_topic" value="/scan" />
+	</include>
+
+	<include file="$(find qbo_navigation)/launch/includes/gmapping_qbo.launch" />
+
+</launch>

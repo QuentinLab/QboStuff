@@ -1,0 +1,18 @@
+<launch>
+  
+  <!--- Run the kinect -->
+  <include file="$(find qbo_bringup)/launch/includes/3dsensor.launch" >
+    <arg name="rgb_processing" value="false" />
+    <arg name="depth_registration" value="false" />
+    <arg name="depth_processing" value="false" />
+    
+    <arg name="scan_topic" value="/scan" />
+  </include>
+  
+  <!--- Run gmapping -->
+  <include file="$(find qbo_navigation)/launch/includes/gmapping_qbo.launch" />
+
+  <!--- Run Move Base -->
+<!--  <include file="$(find qbo_navigation)/launch/includes/move_base_qbo.launch" /> -->
+  
+</launch>

@@ -19,8 +19,10 @@ void VideoAcquisitor::onInit()
 	std::cin >> _numberimage;
 	_topic_image = "/camera/rgb/image_raw";
 	_topic_depth = "/camera/depth/image";
-	_image_video = "/home/qbobot/Documents/videos/sujet" + _numbersubject + "image" + _numberimage + ".avi";
-	_depth_video = "/home/qbobot/Documents/videos/sujet" + _numbersubject + "depth" + _numberimage + ".avi";
+//	_image_video = "/home/qbobot/Documents/videos/sujet" + _numbersubject + "image" + _numberimage + ".avi";
+//	_depth_video = "/home/qbobot/Documents/videos/sujet" + _numbersubject + "depth" + _numberimage + ".avi";
+	_image_video = "/home/qbobot/Documents/videos/bin/binimage.avi";
+	_depth_video = "/home/qbobot/Documents/videos/bin/bindepth.avi";
 	_image_writer.open(_image_video,CV_FOURCC('M','J','P','G'),31,Size(640,480),true);
 	_depth_writer.open(_depth_video,CV_FOURCC('M','J','P','G'),30,Size(640,480),true);
 	_image_sub = _it.subscribe(_topic_image,10,&VideoAcquisitor::imageCallback,this);

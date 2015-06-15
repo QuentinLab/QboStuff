@@ -2,12 +2,12 @@
 
   <param name="robot_description" textfile="$(find qbo_laser_slam)/urdf/qbo.urdf"/>
   
-  <include file="$(find qbo_arduqbo)/launch/qbo_arduqbo_default.launch" />
+<!--  <include file="$(find qbo_arduqbo)/launch/qbo_arduqbo_default.launch" /> -->
 
   <node name="joint_odometry" pkg="qbo_joint_odom" type="qbo_joint_odom.py" />
 
 
-  <node name="link" pkg="tf" type="static_transform_publisher" args="0.06 0 0.02 0 0 0 base_footprint base_link 100" />
+  <node name="link" pkg="tf" type="static_transform_publisher" args="0.0 0 0.0 0 0 0 base_footprint base_link 100" />
   <node name = "depth_camera" pkg="tf" type="static_transform_publisher" args="0.02 0 0.13 0 0 0.08 head camera_link 100" /> 
   <node name="notilt" pkg="tf" type="static_transform_publisher" args="0 0 0.4 0 0 0 base_link camera_depth_frame_notilt 100" />
 
@@ -24,7 +24,7 @@
         <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
         <!-- <param name="range_max" type="double" value="8.0"/> -->
        <!-- <param name="scan_time" type="double" value="0.1"/> -->
-        <param name="scan_height" type="int" value="1"/> 
+        <param name="scan_height" type="int" value="51"/> 
      </node>
   </group>
 
@@ -40,24 +40,26 @@
   </node>-->
 
 
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_laser_slam)/maps/final0902.yaml" />
-
    <!--  <group>
        <node name="amcl" pkg="amcl" type="amcl"> 
          <param name="odom_frame_id" value="odom" />
        </node>
     </group> -->
-    
-    <include file="$(find amcl)/examples/amcl_omni.launch"/>
+unch>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find qbo_navigation)/sejour_final.yaml" />
+    <include file="$(find amcl)/examples/amcl_diff.launch"/> 
 
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+       <!-- <rosparam file="$(find qbo_laser_slam)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+       <rosparam file="$(find qbo_laser_slam)/config/costmap_common.yaml" command="load" ns="local_costmap" /> -->
        <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-       <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-       <rosparam file="$(find qbo_laser_slam)/config/local_costmap_params.yaml" command="load" />
+       <rosparam file="$(find qbo_laser_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap" /> 
+        <rosparam file="$(find qbo_laser_slam)/config/local_costmap_params.yaml" command="load" />
        <rosparam file="$(find qbo_laser_slam)/config/global_costmap_params.yaml" command="load" />
        <rosparam file="$(find qbo_laser_slam)/config/base_local_planner_params.yaml" command="load" />
-       <param name="controller_frequency" value="10"/>
-       <param name="base_global_planner" value="global_planner/testCostmap"/> 
+       <param name="controller_frequency" value="5"/>
+       <param name="base_global_planner" value="global_planner/testCostmap"/>
     </node>
 
 </launch>

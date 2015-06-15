@@ -1,0 +1,27 @@
+<launch>
+
+    
+  <!--- Run Move Base -->
+    <!-- <include file="$(find qbo_navigation)/launch/includes/move_base_qbo.launch" /> -->
+    
+  <!--- Run the xtion -->
+  <!-- <include file="$(find qbo_bringup)/launch/includes/3dsensor.launch" />
+    <param name="scan_processing" value="false" /> -->
+  
+  <!--- Run octomap -->
+  
+	<node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+		<param name="resolution" value="0.02" />
+		
+		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+		<param name="frame_id" type="string" value="odom" />
+		<param name="latch" type="bool" value="false" />
+		
+		<!-- maximum range to integrate (speedup!) -->
+		<param name="sensor_model/max_range" value="5.0" />
+		
+		<!-- data source to integrate (PointCloud2) -->
+		<remap from="cloud_in" to="/camera/depth/points" />
+	
+	</node>
+</launch>

@@ -59,6 +59,7 @@
         <param name="output_frame_id" type="str" value="camera_depth_frame_notilt"/>
         <param name="range_max" type="double" value="8.0"/> 
         <param name="scan_time" type="double" value="0.4"/>
+	<param name="range_min" type="double" value="0.3"/>
         <param name="scan_height" type="int" value="51"/> 
      </node>
   </group>
